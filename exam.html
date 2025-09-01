@@ -404,7 +404,8 @@
                         <p id="resultViolations" class="text-2xl font-bold text-red-600">1</p>
                     </div>
                 </div>
-                
+                                <div class="mb-6">
+                    <h3 class="text-lg font-medium text-red-800 mb-3">Please take a screenshot with your submission ID and score, visit procman.shaurya.dpdns.org, upload screenshot and submission ID to properly update your marks</h3>
                 <div class="mb-6">
                     <h3 class="text-lg font-medium text-gray-800 mb-3">Question Breakdown</h3>
                     <div class="overflow-x-auto">
@@ -878,10 +879,15 @@
             nextQuestion.addEventListener('click', () => {
                 if (currentQuestionIndex < examQuestions.length - 1) {
                     loadQuestion(currentQuestionIndex + 1);
-                } else {
-                    // Last question - show save button
+                }
+                
+                // Update button visibility based on current question
+                if (currentQuestionIndex === examQuestions.length - 1) {
                     nextQuestion.classList.add('hidden');
                     saveExam.classList.remove('hidden');
+                } else {
+                    nextQuestion.classList.remove('hidden');
+                    saveExam.classList.add('hidden');
                 }
             });
             
@@ -1043,7 +1049,13 @@
                 </svg>
                 <span>Violation #${violations}: ${reason}</span>
             `;
+            
+            // Clear previous violations if any
+            violationMessages.innerHTML = '';
             violationMessages.appendChild(violationItem);
+            
+            // Show violation modal
+            showViolation(`Violation #${violations}`, reason);
             
             if (violations >= 3) {
                 autoSubmitExam();
@@ -1177,7 +1189,7 @@
                 score: score,
                 correctAnswers: correctAnswers,
                 totalQuestions: examQuestions.length,
-                answers: userAnswers,
+                answers: JSON.stringify(userAnswers),
                 faceImage: faceImageData
             };
 
