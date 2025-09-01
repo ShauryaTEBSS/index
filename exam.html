@@ -434,7 +434,7 @@
     </div>
 
     <script>
-        // Google Apps Script URL (replace with your actual URL)
+        // Google Apps Script URL (replace with your deployed web app URL)
         const scriptUrl = 'https://script.google.com/a/~/macros/s/AKfycbw3dF6YoGaGh2lf8JMqJh3VvcGpDUIte2FbuLl39jfKnyPj1P6mTuXiNr09F9XfJl0VSg/exec';
         
         // Global variables
@@ -748,14 +748,12 @@
                 const password = document.getElementById('password').value;
                 
                 try {
-                    // In a real app, this would be an API call to verify credentials
-                    // For demo purposes, we'll use a simple check
-                    if (username && password) {
-                        currentUser = {
-                            username,
-                            name: username,
-                            id: Math.random().toString(36).substring(2, 15)
-                        };
+                    // Verify credentials with Google Sheets
+                    const response = await fetch(scriptUrl + '?sheet=cred&username=' + encodeURIComponent(username) + '&password=' + encodeURIComponent(password));
+                    const result = await response.json();
+                    
+                    if (result.success) {
+                        currentUser = result.user;
                         
                         loginScreen.classList.add('hidden');
                         instructionsScreen.classList.remove('hidden');
@@ -763,8 +761,9 @@
                         throw new Error('Invalid username or password');
                     }
                 } catch (error) {
-                    loginError.textContent = error.message;
+                    loginError.textContent = 'Invalid username or password';
                     loginError.classList.remove('hidden');
+                    console.error('Login error:', error);
                 }
             });
             
@@ -1166,8 +1165,7 @@
             finalViolations.textContent = violations;
             questionsAnswered.textContent = `${userAnswers.filter(a => a !== null).length}/${examQuestions.length}`;
             
-            // In a real app, you would send this data to Google Sheets via Google Apps Script
-            // Example data structure:
+            // Send submission data to Google Sheets
             const submissionData = {
                 submissionId: submissionIdText,
                 username: currentUser.username,
@@ -1180,11 +1178,28 @@
                 correctAnswers: correctAnswers,
                 totalQuestions: examQuestions.length,
                 answers: userAnswers,
-                faceImage: faceImageData,
-                // Other relevant data
+                faceImage: faceImageData
             };
-            
-            console.log('Submission data:', submissionData);
+
+            try {
+                const response = await fetch(scriptUrl, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        sheet: 'test',
+                        data: submissionData
+                    })
+                });
+                
+                const result = await response.json();
+                if (!result.success) {
+                    console.error('Failed to save to Google Sheets:', result.error);
+                }
+            } catch (error) {
+                console.error('Error submitting to Google Sheets:', error);
+            }
         }
         
         function displayResults() {
