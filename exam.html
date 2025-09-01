@@ -1,0 +1,1386 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ProcMan Exam System</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+        
+        body {
+            font-family: 'Poppins', sans-serif;
+            overflow-x: hidden;
+        }
+        
+        .fullscreen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: white;
+            z-index: 9999;
+            overflow-y: auto;
+        }
+        
+        .violation-warning {
+            animation: shake 0.5s;
+            animation-iteration-count: 1;
+        }
+        
+        @keyframes shake {
+            0% { transform: translate(1px, 1px) rotate(0deg); }
+            10% { transform: translate(-1px, -2px) rotate(-1deg); }
+            20% { transform: translate(-3px, 0px) rotate(1deg); }
+            30% { transform: translate(3px, 2px) rotate(0deg); }
+            40% { transform: translate(1px, -1px) rotate(1deg); }
+            50% { transform: translate(-1px, 2px) rotate(-1deg); }
+            60% { transform: translate(-3px, 1px) rotate(0deg); }
+            70% { transform: translate(3px, 1px) rotate(-1deg); }
+            80% { transform: translate(-1px, -1px) rotate(1deg); }
+            90% { transform: translate(1px, 2px) rotate(0deg); }
+            100% { transform: translate(1px, -2px) rotate(-1deg); }
+        }
+        
+        .face-capture-box {
+            border: 2px dashed #3b82f6;
+            border-radius: 8px;
+        }
+    </style>
+</head>
+<body class="bg-gray-100">
+    <!-- Splash Screen -->
+    <div id="splashScreen" class="fixed inset-0 bg-white flex flex-col items-center justify-center z-50">
+        <img src="https://cdn.shaurya.dpdns.org/procman-logo.jpg" alt="ProcMan Logo" class="w-32 h-32 mb-4">
+        <h1 class="text-4xl font-bold text-blue-600 mb-2">ProcMan</h1>
+        <p class="text-gray-600">Developed by Shaurya Singh</p>
+        <div class="mt-8 w-64 bg-gray-200 rounded-full h-2.5">
+            <div id="progressBar" class="bg-blue-600 h-2.5 rounded-full" style="width: 0%"></div>
+        </div>
+    </div>
+
+    <!-- Login Screen -->
+    <div id="loginScreen" class="hidden min-h-screen flex items-center justify-center p-4">
+        <div class="w-full max-w-md bg-white rounded-lg shadow-md overflow-hidden">
+            <div class="bg-blue-600 p-4 text-center">
+                <img src="https://cdn.shaurya.dpdns.org/procman-banner.jpg" alt="ProcMan Exam System" class="mx-auto h-16">
+            </div>
+            <div class="p-6">
+                <h2 class="text-2xl font-bold text-gray-800 mb-6 text-center">Login to Your Account</h2>
+                <form id="loginForm" class="space-y-4">
+                    <div>
+                        <label for="username" class="block text-sm font-medium text-gray-700 mb-1">Username</label>
+                        <input type="text" id="username" name="username" required 
+                            class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    </div>
+                    <div>
+                        <label for="password" class="block text-sm font-medium text-gray-700 mb-1">Password</label>
+                        <input type="password" id="password" name="password" required 
+                            class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    </div>
+                    <div>
+                        <button type="submit" class="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 transition duration-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
+                            Login
+                        </button>
+                    </div>
+                </form>
+                <div id="loginError" class="mt-4 text-red-500 text-sm hidden"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Instructions Screen -->
+    <div id="instructionsScreen" class="hidden min-h-screen p-6 max-w-4xl mx-auto">
+        <div class="bg-white rounded-lg shadow-md overflow-hidden">
+            <div class="bg-blue-600 p-4 text-white">
+                <h2 class="text-xl font-bold">Exam Instructions</h2>
+            </div>
+            <div class="p-6">
+                <div class="space-y-4">
+                    <div class="flex items-start">
+                        <div class="flex-shrink-0 h-6 w-6 rounded-full bg-blue-100 flex items-center justify-center">
+                            <span class="text-blue-600 font-bold">1</span>
+                        </div>
+                        <p class="ml-3 text-gray-700">This exam consists of 40 multiple-choice questions. You have 60 minutes to complete it.</p>
+                    </div>
+                    <div class="flex items-start">
+                        <div class="flex-shrink-0 h-6 w-6 rounded-full bg-blue-100 flex items-center justify-center">
+                            <span class="text-blue-600 font-bold">2</span>
+                        </div>
+                        <p class="ml-3 text-gray-700">You can navigate between questions using the Previous and Next buttons.</p>
+                    </div>
+                    <div class="flex items-start">
+                        <div class="flex-shrink-0 h-6 w-6 rounded-full bg-blue-100 flex items-center justify-center">
+                            <span class="text-blue-600 font-bold">3</span>
+                        </div>
+                        <p class="ml-3 text-gray-700">The exam will be conducted under strict anti-cheating measures. Any violation will be recorded.</p>
+                    </div>
+                    <div class="flex items-start">
+                        <div class="flex-shrink-0 h-6 w-6 rounded-full bg-blue-100 flex items-center justify-center">
+                            <span class="text-blue-600 font-bold">4</span>
+                        </div>
+                        <p class="ml-3 text-gray-700">You must remain in full-screen mode throughout the exam. Exiting full-screen will count as a violation.</p>
+                    </div>
+                    <div class="flex items-start">
+                        <div class="flex-shrink-0 h-6 w-6 rounded-full bg-blue-100 flex items-center justify-center">
+                            <span class="text-blue-600 font-bold">5</span>
+                        </div>
+                        <p class="ml-3 text-gray-700">Switching tabs or opening other applications will be detected and count as a violation.</p>
+                    </div>
+                    <div class="flex items-start">
+                        <div class="flex-shrink-0 h-6 w-6 rounded-full bg-blue-100 flex items-center justify-center">
+                            <span class="text-blue-600 font-bold">6</span>
+                        </div>
+                        <p class="ml-3 text-gray-700">Your face must be visible to the webcam throughout the exam. Looking away or having multiple faces detected will count as a violation.</p>
+                    </div>
+                    <div class="flex items-start">
+                        <div class="flex-shrink-0 h-6 w-6 rounded-full bg-blue-100 flex items-center justify-center">
+                            <span class="text-blue-600 font-bold">7</span>
+                        </div>
+                        <p class="ml-3 text-gray-700">After 3 violations, your exam will be automatically submitted.</p>
+                    </div>
+                </div>
+                <div class="mt-8 flex justify-end">
+                    <button id="nextToPermissions" class="bg-blue-600 text-white py-2 px-6 rounded-md hover:bg-blue-700 transition duration-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
+                        Next
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Permissions Screen -->
+    <div id="permissionsScreen" class="hidden min-h-screen p-6 max-w-4xl mx-auto">
+        <div class="bg-white rounded-lg shadow-md overflow-hidden">
+            <div class="bg-blue-600 p-4 text-white">
+                <h2 class="text-xl font-bold">System Permissions</h2>
+            </div>
+            <div class="p-6">
+                <div class="space-y-6">
+                    <div>
+                        <h3 class="text-lg font-medium text-gray-800 mb-2">1. Camera & Microphone Access</h3>
+                        <p class="text-gray-600 mb-4">ProcMan needs access to your camera and microphone to monitor the exam environment and detect any cheating attempts.</p>
+                        <div class="flex items-center">
+                            <button id="requestPermissions" class="bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 transition duration-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
+                                Allow Access
+                            </button>
+                            <div id="permissionStatus" class="ml-4 text-sm text-gray-600">
+                                Status: Not granted
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <h3 class="text-lg font-medium text-gray-800 mb-2">2. Face Verification</h3>
+                        <p class="text-gray-600 mb-4">Please position your face in the frame below. We'll capture your image for verification during the exam.</p>
+                        <div class="flex flex-col items-center">
+                            <div class="face-capture-box w-64 h-64 mb-4 relative overflow-hidden">
+                                <video id="video" autoplay playsinline class="w-full h-full object-cover" style="transform: scaleX(-1);"></video>
+                                <canvas id="canvas" class="hidden"></canvas>
+                            </div>
+                            <button id="captureFace" class="bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 transition duration-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
+                                Capture Face
+                            </button>
+                        </div>
+                        <div id="faceCaptureStatus" class="mt-2 text-sm text-gray-600 hidden">
+                            <span class="text-green-600">✓</span> Face captured successfully
+                        </div>
+                        <div id="facePreview" class="mt-4 hidden">
+                            <p class="text-sm text-gray-600 mb-2">Your verification image:</p>
+                            <img id="faceImage" src="" alt="Captured Face" class="w-32 h-32 rounded border border-gray-300">
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <h3 class="text-lg font-medium text-gray-800 mb-2">3. Full Screen Mode</h3>
+                        <p class="text-gray-600 mb-4">The exam must be taken in full screen mode. You won't be able to exit full screen during the exam without penalty.</p>
+                        <div class="flex items-center">
+                            <button id="testFullscreen" class="bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 transition duration-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
+                                Test Full Screen
+                            </button>
+                            <div id="fullscreenStatus" class="ml-4 text-sm text-gray-600">
+                                Status: Not in full screen
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="mt-8 flex justify-between">
+                    <button id="backToInstructions" class="bg-gray-300 text-gray-800 py-2 px-6 rounded-md hover:bg-gray-400 transition duration-300 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2">
+                        Back
+                    </button>
+                    <button id="startExamBtn" class="bg-green-600 text-white py-2 px-6 rounded-md hover:bg-green-700 transition duration-300 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 hidden">
+                        Start Exam
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Exam Screen -->
+    <div id="examScreen" class="hidden fullscreen">
+        <div class="bg-blue-600 text-white p-4 flex justify-between items-center">
+            <div class="flex items-center">
+                <img src="https://cdn.shaurya.dpdns.org/procman-logo.jpg" alt="ProcMan Logo" class="h-8 mr-2">
+                <span class="font-bold">ProcMan Exam System</span>
+            </div>
+            <div class="flex items-center space-x-4">
+                <div id="timer" class="bg-blue-800 px-3 py-1 rounded font-mono">60:00</div>
+                <div id="violationCount" class="bg-red-500 px-3 py-1 rounded">Violations: 0/3</div>
+                <div id="faceStatus" class="flex items-center">
+                    <span id="faceIndicator" class="w-3 h-3 rounded-full bg-gray-400 mr-1"></span>
+                    <span>Face Detection</span>
+                </div>
+            </div>
+        </div>
+        
+        <div class="container mx-auto p-4 mt-4">
+            <div class="flex flex-col lg:flex-row gap-6">
+                <!-- Question Area -->
+                <div class="flex-1 bg-white rounded-lg shadow-md p-6">
+                    <div class="flex justify-between items-center mb-4">
+                        <div class="text-gray-600">Question <span id="currentQuestionNumber">1</span> of 40</div>
+                        <div id="questionStatus" class="text-sm px-3 py-1 rounded bg-gray-100 text-gray-800">Not answered</div>
+                    </div>
+                    
+                    <div id="questionText" class="text-lg font-medium mb-6">
+                        Loading question...
+                    </div>
+                    
+                    <div id="optionsContainer" class="space-y-3">
+                        <!-- Options will be populated here -->
+                    </div>
+                </div>
+                
+                <!-- Navigation and Violation Area -->
+                <div class="w-full lg:w-64 space-y-4">
+                    <div class="bg-white rounded-lg shadow-md p-4">
+                        <h3 class="font-medium mb-3">Navigation</h3>
+                        <div class="grid grid-cols-5 gap-2">
+                            <!-- Question numbers will be populated here -->
+                        </div>
+                    </div>
+                    
+                    <div class="bg-white rounded-lg shadow-md p-4">
+                        <h3 class="font-medium mb-3">Exam Warnings</h3>
+                        <div id="violationMessages" class="space-y-2 text-sm">
+                            <!-- Violation messages will appear here -->
+                        </div>
+                    </div>
+                    
+                    <div class="bg-white rounded-lg shadow-md p-4">
+                        <h3 class="font-medium mb-3">Webcam Preview</h3>
+                        <div class="face-capture-box w-full h-40 relative overflow-hidden">
+                            <video id="monitoringVideo" autoplay playsinline class="w-full h-full object-cover" style="transform: scaleX(-1);"></video>
+                        </div>
+                        <div id="monitoringStatus" class="mt-2 text-xs text-gray-600">
+                            Monitoring active
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="mt-6 flex justify-between">
+                <button id="prevQuestion" class="bg-gray-300 text-gray-800 py-2 px-6 rounded-md hover:bg-gray-400 transition duration-300 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2">
+                    Previous
+                </button>
+                <button id="nextQuestion" class="bg-blue-600 text-white py-2 px-6 rounded-md hover:bg-blue-700 transition duration-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
+                    Next
+                </button>
+                <button id="saveExam" class="bg-green-600 text-white py-2 px-6 rounded-md hover:bg-green-700 transition duration-300 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 hidden">
+                    Save & Submit
+                </button>
+            </div>
+        </div>
+        
+        <!-- Violation Warning Modal -->
+        <div id="violationModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <div class="bg-white rounded-lg shadow-xl p-6 max-w-md w-full mx-4 violation-warning">
+                <div class="text-center">
+                    <div class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-red-100">
+                        <svg class="h-6 w-6 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                        </svg>
+                    </div>
+                    <h3 class="text-lg font-medium text-gray-900 mt-3" id="violationTitle">Warning: Full Screen Exit</h3>
+                    <div class="mt-2">
+                        <p class="text-sm text-gray-500" id="violationMessage">
+                            You have exited full screen mode. This counts as a violation. Please return to full screen immediately.
+                        </p>
+                    </div>
+                    <div class="mt-4">
+                        <button type="button" id="closeViolationModal" class="inline-flex justify-center px-4 py-2 text-sm font-medium text-white bg-red-600 border border-transparent rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500">
+                            I Understand
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Submission Screen -->
+    <div id="submissionScreen" class="hidden min-h-screen flex items-center justify-center p-4">
+        <div class="w-full max-w-2xl bg-white rounded-lg shadow-md overflow-hidden">
+            <div class="bg-green-600 p-4 text-white text-center">
+                <h2 class="text-xl font-bold">Exam Submitted Successfully</h2>
+            </div>
+            <div class="p-6">
+                <div class="text-center mb-6">
+                    <svg class="mx-auto h-16 w-16 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                    </svg>
+                    <h3 class="text-lg font-medium text-gray-900 mt-3">Thank you for completing the exam!</h3>
+                    <p class="mt-1 text-sm text-gray-500">
+                        Your responses have been recorded successfully.
+                    </p>
+                </div>
+                
+                <div class="bg-gray-50 p-4 rounded-md mb-6">
+                    <div class="text-center">
+                        <p class="text-sm font-medium text-gray-500">Your submission ID:</p>
+                        <p id="submissionId" class="text-xl font-mono font-bold text-gray-800 mt-1">PROC-XXXX-XXXX-XXXX</p>
+                        <p class="text-xs text-red-500 mt-2">Please note this ID for future reference</p>
+                    </div>
+                </div>
+                
+                <div class="space-y-4">
+                    <div class="flex justify-between">
+                        <span class="text-gray-600">Time Taken:</span>
+                        <span id="timeTaken" class="font-medium">59 minutes 32 seconds</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-gray-600">Violations:</span>
+                        <span id="finalViolations" class="font-medium">1</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-gray-600">Questions Answered:</span>
+                        <span id="questionsAnswered" class="font-medium">38/40</span>
+                    </div>
+                </div>
+                
+                <div class="mt-8 flex justify-center space-x-4">
+                    <button id="viewResultsBtn" class="bg-blue-600 text-white py-2 px-6 rounded-md hover:bg-blue-700 transition duration-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
+                        View Results
+                    </button>
+                    <button id="finishBtn" class="bg-gray-300 text-gray-800 py-2 px-6 rounded-md hover:bg-gray-400 transition duration-300 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2">
+                        Finish
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Results Screen -->
+    <div id="resultsScreen" class="hidden min-h-screen p-6 max-w-4xl mx-auto">
+        <div class="bg-white rounded-lg shadow-md overflow-hidden">
+            <div class="bg-blue-600 p-4 text-white">
+                <h2 class="text-xl font-bold">Exam Results</h2>
+            </div>
+            <div class="p-6">
+                <div class="flex flex-col md:flex-row justify-between mb-6">
+                    <div>
+                        <p class="text-sm text-gray-500">Submission ID</p>
+                        <p id="resultSubmissionId" class="font-medium">PROC-XXXX-XXXX-XXXX</p>
+                    </div>
+                    <div class="mt-4 md:mt-0">
+                        <p class="text-sm text-gray-500">Date & Time</p>
+                        <p id="resultDateTime" class="font-medium">June 15, 2023 at 14:30</p>
+                    </div>
+                </div>
+                
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                    <div class="bg-blue-50 p-4 rounded-md">
+                        <p class="text-sm text-gray-500">Score</p>
+                        <p id="resultScore" class="text-2xl font-bold text-blue-600">85%</p>
+                    </div>
+                    <div class="bg-green-50 p-4 rounded-md">
+                        <p class="text-sm text-gray-500">Correct Answers</p>
+                        <p id="resultCorrect" class="text-2xl font-bold text-green-600">34/40</p>
+                    </div>
+                    <div class="bg-red-50 p-4 rounded-md">
+                        <p class="text-sm text-gray-500">Violations</p>
+                        <p id="resultViolations" class="text-2xl font-bold text-red-600">1</p>
+                    </div>
+                </div>
+                
+                <div class="mb-6">
+                    <h3 class="text-lg font-medium text-gray-800 mb-3">Question Breakdown</h3>
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full divide-y divide-gray-200">
+                            <thead class="bg-gray-50">
+                                <tr>
+                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Question</th>
+                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Your Answer</th>
+                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Correct Answer</th>
+                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                                </tr>
+                            </thead>
+                            <tbody id="resultsTableBody" class="bg-white divide-y divide-gray-200">
+                                <!-- Results will be populated here -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                
+                <div class="flex justify-end">
+                    <button id="backToSubmission" class="bg-blue-600 text-white py-2 px-6 rounded-md hover:bg-blue-700 transition duration-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
+                        Back
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Google Apps Script URL (replace with your actual URL)
+        const scriptUrl = 'https://script.google.com/a/~/macros/s/AKfycbw3dF6YoGaGh2lf8JMqJh3VvcGpDUIte2FbuLl39jfKnyPj1P6mTuXiNr09F9XfJl0VSg/exec';
+        
+        // Global variables
+        let currentUser = null;
+        let examQuestions = [];
+        let userAnswers = Array(40).fill(null);
+        let violations = 0;
+        let examTimer;
+        let examStartTime;
+        let examEndTime;
+        let faceImageData = null;
+        let originalFaceDescriptor = null;
+        let faceMatcher = null;
+        let isMonitoring = false;
+        let monitoringInterval;
+        let tabSwitchCount = 0;
+        let fullscreenExitCount = 0;
+        let faceNotDetectedCount = 0;
+        let multipleFacesCount = 0;
+        let currentQuestionIndex = 0;
+        
+        // DOM Elements
+        const splashScreen = document.getElementById('splashScreen');
+        const loginScreen = document.getElementById('loginScreen');
+        const instructionsScreen = document.getElementById('instructionsScreen');
+        const permissionsScreen = document.getElementById('permissionsScreen');
+        const examScreen = document.getElementById('examScreen');
+        const submissionScreen = document.getElementById('submissionScreen');
+        const resultsScreen = document.getElementById('resultsScreen');
+        
+        const progressBar = document.getElementById('progressBar');
+        const loginForm = document.getElementById('loginForm');
+        const loginError = document.getElementById('loginError');
+        
+        const nextToPermissions = document.getElementById('nextToPermissions');
+        const backToInstructions = document.getElementById('backToInstructions');
+        const requestPermissions = document.getElementById('requestPermissions');
+        const permissionStatus = document.getElementById('permissionStatus');
+        const captureFace = document.getElementById('captureFace');
+        const faceCaptureStatus = document.getElementById('faceCaptureStatus');
+        const facePreview = document.getElementById('facePreview');
+        const faceImage = document.getElementById('faceImage');
+        const testFullscreen = document.getElementById('testFullscreen');
+        const fullscreenStatus = document.getElementById('fullscreenStatus');
+        const startExamBtn = document.getElementById('startExamBtn');
+        
+        const video = document.getElementById('video');
+        const canvas = document.getElementById('canvas');
+        const monitoringVideo = document.getElementById('monitoringVideo');
+        
+        const timer = document.getElementById('timer');
+        const violationCount = document.getElementById('violationCount');
+        const faceIndicator = document.getElementById('faceIndicator');
+        const currentQuestionNumber = document.getElementById('currentQuestionNumber');
+        const questionStatus = document.getElementById('questionStatus');
+        const questionText = document.getElementById('questionText');
+        const optionsContainer = document.getElementById('optionsContainer');
+        const prevQuestion = document.getElementById('prevQuestion');
+        const nextQuestion = document.getElementById('nextQuestion');
+        const saveExam = document.getElementById('saveExam');
+        
+        const violationModal = document.getElementById('violationModal');
+        const violationTitle = document.getElementById('violationTitle');
+        const violationMessage = document.getElementById('violationMessage');
+        const closeViolationModal = document.getElementById('closeViolationModal');
+        const violationMessages = document.getElementById('violationMessages');
+        
+        const submissionId = document.getElementById('submissionId');
+        const timeTaken = document.getElementById('timeTaken');
+        const finalViolations = document.getElementById('finalViolations');
+        const questionsAnswered = document.getElementById('questionsAnswered');
+        const viewResultsBtn = document.getElementById('viewResultsBtn');
+        const finishBtn = document.getElementById('finishBtn');
+        
+        const resultSubmissionId = document.getElementById('resultSubmissionId');
+        const resultDateTime = document.getElementById('resultDateTime');
+        const resultScore = document.getElementById('resultScore');
+        const resultCorrect = document.getElementById('resultCorrect');
+        const resultViolations = document.getElementById('resultViolations');
+        const resultsTableBody = document.getElementById('resultsTableBody');
+        const backToSubmission = document.getElementById('backToSubmission');
+        
+        // Sample questions (in a real app, these would come from a database)
+        examQuestions = [
+            {
+                question: "What is the capital of France?",
+                options: ["London", "Berlin", "Paris", "Madrid"],
+                correctAnswer: 2
+            },
+            {
+                question: "Which planet is known as the Red Planet?",
+                options: ["Venus", "Mars", "Jupiter", "Saturn"],
+                correctAnswer: 1
+            },
+            {
+                question: "What is the largest mammal in the world?",
+                options: ["Elephant", "Blue Whale", "Giraffe", "Polar Bear"],
+                correctAnswer: 1
+            },
+            {
+                question: "Which element has the chemical symbol 'O'?",
+                options: ["Gold", "Oxygen", "Silver", "Osmium"],
+                correctAnswer: 1
+            },
+            {
+                question: "Who painted the Mona Lisa?",
+                options: ["Vincent van Gogh", "Pablo Picasso", "Leonardo da Vinci", "Michelangelo"],
+                correctAnswer: 2
+            },
+            {
+                question: "What is the largest ocean on Earth?",
+                options: ["Atlantic Ocean", "Indian Ocean", "Arctic Ocean", "Pacific Ocean"],
+                correctAnswer: 3
+            },
+            {
+                question: "Which country is home to the kangaroo?",
+                options: ["New Zealand", "Australia", "South Africa", "Brazil"],
+                correctAnswer: 1
+            },
+            {
+                question: "What is the main component of the Sun?",
+                options: ["Liquid lava", "Hydrogen", "Oxygen", "Carbon"],
+                correctAnswer: 1
+            },
+            {
+                question: "Which language has the most native speakers?",
+                options: ["English", "Spanish", "Hindi", "Mandarin Chinese"],
+                correctAnswer: 3
+            },
+            {
+                question: "What is the largest desert in the world?",
+                options: ["Sahara Desert", "Arabian Desert", "Gobi Desert", "Antarctica"],
+                correctAnswer: 3
+            },
+            {
+                question: "Which organ pumps blood throughout the body?",
+                options: ["Liver", "Heart", "Brain", "Lungs"],
+                correctAnswer: 1
+            },
+            {
+                question: "What is the smallest prime number?",
+                options: ["0", "1", "2", "3"],
+                correctAnswer: 2
+            },
+            {
+                question: "Which country is the largest by area?",
+                options: ["China", "United States", "Canada", "Russia"],
+                correctAnswer: 3
+            },
+            {
+                question: "What is the hardest natural substance on Earth?",
+                options: ["Gold", "Iron", "Diamond", "Quartz"],
+                correctAnswer: 2
+            },
+            {
+                question: "Which gas do plants absorb from the atmosphere?",
+                options: ["Oxygen", "Carbon Dioxide", "Nitrogen", "Hydrogen"],
+                correctAnswer: 1
+            },
+            {
+                question: "What is the capital of Japan?",
+                options: ["Beijing", "Seoul", "Tokyo", "Bangkok"],
+                correctAnswer: 2
+            },
+            {
+                question: "Which planet is closest to the Sun?",
+                options: ["Venus", "Mercury", "Earth", "Mars"],
+                correctAnswer: 1
+            },
+            {
+                question: "What is the largest bone in the human body?",
+                options: ["Femur", "Tibia", "Humerus", "Skull"],
+                correctAnswer: 0
+            },
+            {
+                question: "Which scientist developed the theory of relativity?",
+                options: ["Isaac Newton", "Albert Einstein", "Galileo Galilei", "Stephen Hawking"],
+                correctAnswer: 1
+            },
+            {
+                question: "What is the currency of the United Kingdom?",
+                options: ["Euro", "Dollar", "Pound Sterling", "Yen"],
+                correctAnswer: 2
+            },
+            {
+                question: "Which animal is known as the 'King of the Jungle'?",
+                options: ["Tiger", "Elephant", "Lion", "Gorilla"],
+                correctAnswer: 2
+            },
+            {
+                question: "What is the largest continent by area?",
+                options: ["Africa", "North America", "Asia", "Europe"],
+                correctAnswer: 2
+            },
+            {
+                question: "Which country is famous for the Great Pyramid of Giza?",
+                options: ["Iraq", "Egypt", "Greece", "Mexico"],
+                correctAnswer: 1
+            },
+            {
+                question: "What is the chemical symbol for gold?",
+                options: ["Go", "Gd", "Au", "Ag"],
+                correctAnswer: 2
+            },
+            {
+                question: "Which planet has the most moons?",
+                options: ["Jupiter", "Saturn", "Uranus", "Neptune"],
+                correctAnswer: 1
+            },
+            {
+                question: "What is the largest bird in the world?",
+                options: ["Eagle", "Albatross", "Ostrich", "Condor"],
+                correctAnswer: 2
+            },
+            {
+                question: "Which country invented tea?",
+                options: ["India", "China", "Japan", "England"],
+                correctAnswer: 1
+            },
+            {
+                question: "What is the capital of Canada?",
+                options: ["Toronto", "Vancouver", "Ottawa", "Montreal"],
+                correctAnswer: 2
+            },
+            {
+                question: "Which planet is known for its beautiful rings?",
+                options: ["Jupiter", "Saturn", "Uranus", "Neptune"],
+                correctAnswer: 1
+            },
+            {
+                question: "What is the tallest mountain in the world?",
+                options: ["K2", "Mount Everest", "Kangchenjunga", "Lhotse"],
+                correctAnswer: 1
+            },
+            {
+                question: "Which country is the largest producer of coffee?",
+                options: ["Colombia", "Brazil", "Vietnam", "Ethiopia"],
+                correctAnswer: 1
+            },
+            {
+                question: "What is the largest species of shark?",
+                options: ["Great White Shark", "Tiger Shark", "Whale Shark", "Hammerhead Shark"],
+                correctAnswer: 2
+            },
+            {
+                question: "Which country is home to the Taj Mahal?",
+                options: ["Pakistan", "Bangladesh", "India", "Nepal"],
+                correctAnswer: 2
+            },
+            {
+                question: "What is the capital of Australia?",
+                options: ["Sydney", "Melbourne", "Canberra", "Perth"],
+                correctAnswer: 2
+            },
+            {
+                question: "Which planet is the hottest in our solar system?",
+                options: ["Mercury", "Venus", "Mars", "Jupiter"],
+                correctAnswer: 1
+            },
+            {
+                question: "What is the largest land animal?",
+                options: ["Elephant", "Rhinoceros", "Hippopotamus", "Giraffe"],
+                correctAnswer: 0
+            },
+            {
+                question: "Which country is the largest producer of chocolate?",
+                options: ["Switzerland", "Belgium", "United States", "Ivory Coast"],
+                correctAnswer: 3
+            },
+            {
+                question: "What is the capital of Brazil?",
+                options: ["Rio de Janeiro", "São Paulo", "Brasília", "Salvador"],
+                correctAnswer: 2
+            },
+            {
+                question: "Which planet is known as the 'Morning Star' or 'Evening Star'?",
+                options: ["Mercury", "Venus", "Mars", "Jupiter"],
+                correctAnswer: 1
+            },
+            {
+                question: "What is the largest organ in the human body?",
+                options: ["Liver", "Brain", "Skin", "Heart"],
+                correctAnswer: 2
+            }
+        ];
+        
+        // Initialize the app
+        document.addEventListener('DOMContentLoaded', () => {
+            // Show splash screen for 3 seconds
+            let progress = 0;
+            const interval = setInterval(() => {
+                progress += 1;
+                progressBar.style.width = `${progress}%`;
+                
+                if (progress >= 100) {
+                    clearInterval(interval);
+                    splashScreen.classList.add('hidden');
+                    loginScreen.classList.remove('hidden');
+                }
+            }, 30);
+            
+            // Set up event listeners
+            setupEventListeners();
+        });
+        
+        function setupEventListeners() {
+            // Login form submission
+            loginForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const username = document.getElementById('username').value;
+                const password = document.getElementById('password').value;
+                
+                try {
+                    // In a real app, this would be an API call to verify credentials
+                    // For demo purposes, we'll use a simple check
+                    if (username && password) {
+                        currentUser = {
+                            username,
+                            name: username,
+                            id: Math.random().toString(36).substring(2, 15)
+                        };
+                        
+                        loginScreen.classList.add('hidden');
+                        instructionsScreen.classList.remove('hidden');
+                    } else {
+                        throw new Error('Invalid username or password');
+                    }
+                } catch (error) {
+                    loginError.textContent = error.message;
+                    loginError.classList.remove('hidden');
+                }
+            });
+            
+            // Navigation buttons
+            nextToPermissions.addEventListener('click', () => {
+                instructionsScreen.classList.add('hidden');
+                permissionsScreen.classList.remove('hidden');
+            });
+            
+            backToInstructions.addEventListener('click', () => {
+                permissionsScreen.classList.add('hidden');
+                instructionsScreen.classList.remove('hidden');
+            });
+            
+            // Request permissions
+            requestPermissions.addEventListener('click', async () => {
+                try {
+                    const stream = await navigator.mediaDevices.getUserMedia({
+                        video: true,
+                        audio: true
+                    });
+                    
+                    video.srcObject = stream;
+                    permissionStatus.textContent = 'Status: Granted';
+                    permissionStatus.className = 'ml-4 text-sm text-green-600';
+                    
+                    // Enable face capture button
+                    captureFace.disabled = false;
+                } catch (error) {
+                    permissionStatus.textContent = 'Status: Denied - ' + error.message;
+                    permissionStatus.className = 'ml-4 text-sm text-red-600';
+                    console.error('Error accessing media devices:', error);
+                }
+            });
+            
+            // Capture face
+            captureFace.addEventListener('click', () => {
+                // In a real app, we would use face-api.js or similar for face detection
+                // For demo purposes, we'll just capture an image
+                canvas.width = video.videoWidth;
+                canvas.height = video.videoHeight;
+                canvas.getContext('2d').drawImage(video, 0, 0, canvas.width, canvas.height);
+                
+                faceImageData = canvas.toDataURL('image/png');
+                faceImage.src = faceImageData;
+                
+                faceCaptureStatus.classList.remove('hidden');
+                facePreview.classList.remove('hidden');
+                
+                // Simulate face descriptor
+                originalFaceDescriptor = {
+                    id: 'user_' + Math.random().toString(36).substr(2, 9),
+                    descriptor: new Float32Array(128).map(() => Math.random())
+                };
+                
+                // Enable fullscreen test button
+                testFullscreen.disabled = false;
+            });
+            
+            // Test fullscreen
+            testFullscreen.addEventListener('click', () => {
+                if (!document.fullscreenElement) {
+                    document.documentElement.requestFullscreen()
+                        .then(() => {
+                            fullscreenStatus.textContent = 'Status: In full screen';
+                            fullscreenStatus.className = 'ml-4 text-sm text-green-600';
+                            
+                            // Enable start exam button
+                            startExamBtn.classList.remove('hidden');
+                        })
+                        .catch(err => {
+                            fullscreenStatus.textContent = 'Status: Error - ' + err.message;
+                            fullscreenStatus.className = 'ml-4 text-sm text-red-600';
+                        });
+                }
+            });
+            
+            // Start exam
+            startExamBtn.addEventListener('click', () => {
+                permissionsScreen.classList.add('hidden');
+                examScreen.classList.remove('hidden');
+                
+                // Start monitoring
+                startMonitoring();
+                
+                // Start exam timer (60 minutes)
+                let timeLeft = 60 * 60; // 60 minutes in seconds
+                updateTimerDisplay(timeLeft);
+                
+                examStartTime = new Date();
+                examTimer = setInterval(() => {
+                    timeLeft--;
+                    updateTimerDisplay(timeLeft);
+                    
+                    if (timeLeft <= 0) {
+                        clearInterval(examTimer);
+                        autoSubmitExam();
+                    }
+                }, 1000);
+                
+                // Load first question
+                loadQuestion(0);
+            });
+            
+            // Navigation in exam
+            prevQuestion.addEventListener('click', () => {
+                if (currentQuestionIndex > 0) {
+                    loadQuestion(currentQuestionIndex - 1);
+                }
+            });
+            
+            nextQuestion.addEventListener('click', () => {
+                if (currentQuestionIndex < examQuestions.length - 1) {
+                    loadQuestion(currentQuestionIndex + 1);
+                } else {
+                    // Last question - show save button
+                    nextQuestion.classList.add('hidden');
+                    saveExam.classList.remove('hidden');
+                }
+            });
+            
+            saveExam.addEventListener('click', () => {
+                saveExam.classList.add('hidden');
+                submitExam();
+            });
+            
+            // Violation modal
+            closeViolationModal.addEventListener('click', () => {
+                violationModal.classList.add('hidden');
+            });
+            
+            // View results
+            viewResultsBtn.addEventListener('click', () => {
+                submissionScreen.classList.add('hidden');
+                resultsScreen.classList.remove('hidden');
+                displayResults();
+            });
+            
+            // Back to submission from results
+            backToSubmission.addEventListener('click', () => {
+                resultsScreen.classList.add('hidden');
+                submissionScreen.classList.remove('hidden');
+            });
+            
+            // Finish button
+            finishBtn.addEventListener('click', () => {
+                // In a real app, you might redirect to a different page
+                alert('Thank you for using ProcMan Exam System');
+                window.location.reload();
+            });
+            
+            // Fullscreen change detection
+            document.addEventListener('fullscreenchange', () => {
+                if (!document.fullscreenElement && isMonitoring) {
+                    handleFullscreenExit();
+                }
+            });
+            
+            // Visibility change detection (tab switching)
+            document.addEventListener('visibilitychange', () => {
+                if (document.hidden && isMonitoring) {
+                    handleTabSwitch();
+                }
+            });
+        }
+        
+        function startMonitoring() {
+            isMonitoring = true;
+            
+            // Start video monitoring
+            navigator.mediaDevices.getUserMedia({ video: true })
+                .then(stream => {
+                    monitoringVideo.srcObject = stream;
+                    
+                    // Start periodic face checks (simplified for demo)
+                    monitoringInterval = setInterval(() => {
+                        // In a real app, we would use face-api.js to detect faces
+                        // and compare with the original face descriptor
+                        
+                        // Simulate random face detection status
+                        const status = Math.random();
+                        
+                        if (status < 0.1) {
+                            // No face detected
+                            faceNotDetectedCount++;
+                            faceIndicator.className = 'w-3 h-3 rounded-full bg-red-500 mr-1';
+                            
+                            if (faceNotDetectedCount >= 5) {
+                                addViolation('Face not detected for extended period');
+                                faceNotDetectedCount = 0;
+                            }
+                        } else if (status < 0.15) {
+                            // Multiple faces detected
+                            multipleFacesCount++;
+                            faceIndicator.className = 'w-3 h-3 rounded-full bg-yellow-500 mr-1';
+                            
+                            if (multipleFacesCount >= 3) {
+                                addViolation('Multiple faces detected');
+                                multipleFacesCount = 0;
+                            }
+                        } else {
+                            // Face detected and matches
+                            faceIndicator.className = 'w-3 h-3 rounded-full bg-green-500 mr-1';
+                            faceNotDetectedCount = 0;
+                            multipleFacesCount = 0;
+                        }
+                    }, 2000);
+                })
+                .catch(err => {
+                    console.error('Error starting monitoring:', err);
+                });
+        }
+        
+        function stopMonitoring() {
+            isMonitoring = false;
+            clearInterval(monitoringInterval);
+            
+            if (monitoringVideo.srcObject) {
+                monitoringVideo.srcObject.getTracks().forEach(track => track.stop());
+            }
+        }
+        
+        function handleFullscreenExit() {
+            fullscreenExitCount++;
+            
+            if (fullscreenExitCount >= 3) {
+                addViolation('Repeated full screen exits');
+                fullscreenExitCount = 0;
+            } else {
+                showViolation('Warning: Full Screen Exit', 
+                    'You have exited full screen mode. This counts as a violation. Please return to full screen immediately.');
+            }
+            
+            // Try to return to fullscreen
+            document.documentElement.requestFullscreen().catch(() => {});
+        }
+        
+        function handleTabSwitch() {
+            tabSwitchCount++;
+            
+            if (tabSwitchCount >= 3) {
+                addViolation('Repeated tab switching');
+                tabSwitchCount = 0;
+            } else {
+                showViolation('Warning: Tab Switch Detected', 
+                    'You have switched tabs or minimized the browser. This counts as a violation. Please return to the exam immediately.');
+            }
+        }
+        
+        function showViolation(title, message) {
+            violationTitle.textContent = title;
+            violationMessage.textContent = message;
+            violationModal.classList.remove('hidden');
+            
+            // Add to violation messages list
+            const violationItem = document.createElement('div');
+            violationItem.className = 'text-red-600 flex items-start';
+            violationItem.innerHTML = `
+                <svg class="h-4 w-4 mt-0.5 mr-1.5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                </svg>
+                <span>${title}: ${message}</span>
+            `;
+            violationMessages.appendChild(violationItem);
+        }
+        
+        function addViolation(reason) {
+            violations++;
+            violationCount.textContent = `Violations: ${violations}/3`;
+            
+            // Add to violation messages list
+            const violationItem = document.createElement('div');
+            violationItem.className = 'text-red-600 font-medium flex items-start';
+            violationItem.innerHTML = `
+                <svg class="h-4 w-4 mt-0.5 mr-1.5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                </svg>
+                <span>Violation #${violations}: ${reason}</span>
+            `;
+            violationMessages.appendChild(violationItem);
+            
+            if (violations >= 3) {
+                autoSubmitExam();
+            }
+        }
+        
+        function updateTimerDisplay(seconds) {
+            const mins = Math.floor(seconds / 60);
+            const secs = seconds % 60;
+            timer.textContent = `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+        }
+        
+        function loadQuestion(index) {
+            currentQuestionIndex = index;
+            const question = examQuestions[index];
+            
+            // Update question number
+            currentQuestionNumber.textContent = index + 1;
+            
+            // Update question text
+            questionText.textContent = question.question;
+            
+            // Clear previous options
+            optionsContainer.innerHTML = '';
+            
+            // Add new options
+            question.options.forEach((option, i) => {
+                const optionDiv = document.createElement('div');
+                optionDiv.className = 'flex items-center p-3 border border-gray-200 rounded-md cursor-pointer hover:bg-blue-50';
+                
+                const input = document.createElement('input');
+                input.type = 'radio';
+                input.name = 'questionOption';
+                input.id = `option_${i}`;
+                input.value = i;
+                input.className = 'h-4 w-4 text-blue-600 focus:ring-blue-500';
+                
+                if (userAnswers[index] === i) {
+                    input.checked = true;
+                }
+                
+                input.addEventListener('change', () => {
+                    userAnswers[index] = i;
+                    updateQuestionStatus();
+                });
+                
+                const label = document.createElement('label');
+                label.htmlFor = `option_${i}`;
+                label.className = 'ml-3 block text-gray-700 cursor-pointer';
+                label.textContent = option;
+                
+                optionDiv.appendChild(input);
+                optionDiv.appendChild(label);
+                optionsContainer.appendChild(optionDiv);
+            });
+            
+            // Update navigation buttons
+            prevQuestion.disabled = index === 0;
+            nextQuestion.disabled = index === examQuestions.length - 1;
+            nextQuestion.classList.remove('hidden');
+            saveExam.classList.add('hidden');
+            
+            // Update question status
+            updateQuestionStatus();
+        }
+        
+        function updateQuestionStatus() {
+            if (userAnswers[currentQuestionIndex] !== null) {
+                questionStatus.textContent = 'Answered';
+                questionStatus.className = 'text-sm px-3 py-1 rounded bg-green-100 text-green-800';
+            } else {
+                questionStatus.textContent = 'Not answered';
+                questionStatus.className = 'text-sm px-3 py-1 rounded bg-gray-100 text-gray-800';
+            }
+        }
+        
+        function autoSubmitExam() {
+            stopMonitoring();
+            clearInterval(examTimer);
+            
+            // Show warning
+            showViolation('Exam Auto-Submitted', 'Your exam has been automatically submitted due to multiple violations.');
+            
+            // Submit after delay
+            setTimeout(submitExam, 2000);
+        }
+        
+        async function submitExam() {
+            stopMonitoring();
+            clearInterval(examTimer);
+            examEndTime = new Date();
+            
+            // Calculate time taken
+            const timeTakenMs = examEndTime - examStartTime;
+            const minutes = Math.floor(timeTakenMs / 60000);
+            const seconds = Math.floor((timeTakenMs % 60000) / 1000);
+            
+            // Calculate score
+            let correctAnswers = 0;
+            userAnswers.forEach((answer, index) => {
+                if (answer === examQuestions[index].correctAnswer) {
+                    correctAnswers++;
+                }
+            });
+            
+            const score = Math.round((correctAnswers / examQuestions.length) * 100);
+            
+            // Generate submission ID
+            const submissionIdText = `PROC-${Math.random().toString(36).substring(2, 6).toUpperCase()}-${Math.random().toString(36).substring(2, 6).toUpperCase()}-${Math.random().toString(36).substring(2, 6).toUpperCase()}`;
+            
+            // In a real app, this would be sent to the server
+            // For demo, we'll just display it
+            examScreen.classList.add('hidden');
+            submissionScreen.classList.remove('hidden');
+            
+            // Display submission details
+            submissionId.textContent = submissionIdText;
+            timeTaken.textContent = `${minutes} minutes ${seconds} seconds`;
+            finalViolations.textContent = violations;
+            questionsAnswered.textContent = `${userAnswers.filter(a => a !== null).length}/${examQuestions.length}`;
+            
+            // In a real app, you would send this data to Google Sheets via Google Apps Script
+            // Example data structure:
+            const submissionData = {
+                submissionId: submissionIdText,
+                username: currentUser.username,
+                name: currentUser.name,
+                startTime: examStartTime.toISOString(),
+                endTime: examEndTime.toISOString(),
+                timeTaken: `${minutes}m ${seconds}s`,
+                violations: violations,
+                score: score,
+                correctAnswers: correctAnswers,
+                totalQuestions: examQuestions.length,
+                answers: userAnswers,
+                faceImage: faceImageData,
+                // Other relevant data
+            };
+            
+            console.log('Submission data:', submissionData);
+        }
+        
+        function displayResults() {
+            // Calculate score
+            let correctAnswers = 0;
+            userAnswers.forEach((answer, index) => {
+                if (answer === examQuestions[index].correctAnswer) {
+                    correctAnswers++;
+                }
+            });
+            
+            const score = Math.round((correctAnswers / examQuestions.length) * 100);
+            
+            // Display summary
+            resultSubmissionId.textContent = submissionId.textContent;
+            resultDateTime.textContent = new Date().toLocaleString();
+            resultScore.textContent = `${score}%`;
+            resultCorrect.textContent = `${correctAnswers}/${examQuestions.length}`;
+            resultViolations.textContent = violations;
+            
+            // Display detailed results
+            resultsTableBody.innerHTML = '';
+            examQuestions.forEach((question, index) => {
+                const row = document.createElement('tr');
+                
+                const questionCell = document.createElement('td');
+                questionCell.className = 'px-6 py-4 whitespace-nowrap text-sm text-gray-900';
+                questionCell.textContent = `Q${index + 1}: ${question.question}`;
+                
+                const userAnswerCell = document.createElement('td');
+                userAnswerCell.className = 'px-6 py-4 whitespace-nowrap text-sm text-gray-500';
+                userAnswerCell.textContent = userAnswers[index] !== null ? question.options[userAnswers[index]] : 'Not answered';
+                
+                const correctAnswerCell = document.createElement('td');
+                correctAnswerCell.className = 'px-6 py-4 whitespace-nowrap text-sm text-gray-500';
+                correctAnswerCell.textContent = question.options[question.correctAnswer];
+                
+                const statusCell = document.createElement('td');
+                statusCell.className = 'px-6 py-4 whitespace-nowrap text-sm';
+                
+                if (userAnswers[index] === question.correctAnswer) {
+                    statusCell.innerHTML = '<span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">Correct</span>';
+                } else if (userAnswers[index] === null) {
+                    statusCell.innerHTML = '<span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-gray-100 text-gray-800">Not answered</span>';
+                } else {
+                    statusCell.innerHTML = '<span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">Incorrect</span>';
+                }
+                
+                row.appendChild(questionCell);
+                row.appendChild(userAnswerCell);
+                row.appendChild(correctAnswerCell);
+                row.appendChild(statusCell);
+                
+                resultsTableBody.appendChild(row);
+            });
+        }
+    </script>
+
+    <!-- Google Apps Script Code (to be deployed separately) -->
+    <!--
+    // Deploy this as a web app in Google Apps Script
+    // Set doGet and doPost functions to handle requests
+    
+    function doPost(e) {
+      const sheetId = 'YOUR_GOOGLE_SHEET_ID';
+      const sheetName = e.parameter.sheet || 'test';
+      
+      try {
+        const ss = SpreadsheetApp.openById(sheetId);
+        const sheet = ss.getSheetByName(sheetName) || ss.insertSheet(sheetName);
+        
+        const data = JSON.parse(e.postData.contents);
+        
+        if (sheetName === 'cred') {
+          // Handle login credentials
+          const lastRow = sheet.getLastRow();
+          sheet.getRange(lastRow + 1, 1, 1, 2).setValues([[data.username, data.password]]);
+          
+          return ContentService.createTextOutput(JSON.stringify({ success: true }))
+            .setMimeType(ContentService.MimeType.JSON);
+        } else if (sheetName === 'test') {
+          // Handle exam submissions
+          const headers = [
+            'Submission ID', 'Username', 'Name', 'Start Time', 'End Time', 
+            'Time Taken', 'Violations', 'Score', 'Correct Answers', 
+            'Total Questions', 'Answers', 'Face Image'
+          ];
+          
+          // Set headers if sheet is empty
+          if (sheet.getLastRow() === 0) {
+            sheet.appendRow(headers);
+          }
+          
+          // Prepare data row
+          const rowData = [
+            data.submissionId,
+            data.username,
+            data.name,
+            data.startTime,
+            data.endTime,
+            data.timeTaken,
+            data.violations,
+            data.score,
+            data.correctAnswers,
+            data.totalQuestions,
+            JSON.stringify(data.answers),
+            data.faceImage
+          ];
+          
+          sheet.appendRow(rowData);
+          
+          return ContentService.createTextOutput(JSON.stringify({ 
+            success: true, 
+            submissionId: data.submissionId 
+          })).setMimeType(ContentService.MimeType.JSON);
+        }
+      } catch (error) {
+        return ContentService.createTextOutput(JSON.stringify({ 
+          success: false, 
+          error: error.message 
+        })).setMimeType(ContentService.MimeType.JSON);
+      }
+    }
+    
+    function doGet(e) {
+      const sheetId = 'YOUR_GOOGLE_SHEET_ID';
+      const sheetName = e.parameter.sheet || 'cred';
+      
+      try {
+        const ss = SpreadsheetApp.openById(sheetId);
+        const sheet = ss.getSheetByName(sheetName);
+        
+        if (!sheet) {
+          throw new Error('Sheet not found');
+        }
+        
+        const data = sheet.getDataRange().getValues();
+        
+        if (sheetName === 'cred') {
+          // Verify login credentials
+          const username = e.parameter.username;
+          const password = e.parameter.password;
+          
+          for (let i = 0; i < data.length; i++) {
+            if (data[i][0] === username && data[i][1] === password) {
+              return ContentService.createTextOutput(JSON.stringify({ 
+                success: true,
+                user: {
+                  username: username,
+                  name: username
+                }
+              })).setMimeType(ContentService.MimeType.JSON);
+            }
+          }
+          
+          return ContentService.createTextOutput(JSON.stringify({ 
+            success: false,
+            error: 'Invalid credentials'
+          })).setMimeType(ContentService.MimeType.JSON);
+        } else if (sheetName === 'test') {
+          // Get exam results
+          const submissionId = e.parameter.submissionId;
+          
+          if (!submissionId) {
+            throw new Error('Submission ID required');
+          }
+          
+          const headers = data[0];
+          const submissionIndex = headers.indexOf('Submission ID');
+          
+          for (let i = 1; i < data.length; i++) {
+            if (data[i][submissionIndex] === submissionId) {
+              const result = {};
+              headers.forEach((header, index) => {
+                result[header] = data[i][index];
+              });
+              
+              return ContentService.createTextOutput(JSON.stringify({ 
+                success: true,
+                result: result
+              })).setMimeType(ContentService.MimeType.JSON);
+            }
+          }
+          
+          return ContentService.createTextOutput(JSON.stringify({ 
+            success: false,
+            error: 'Submission not found'
+          })).setMimeType(ContentService.MimeType.JSON);
+        }
+      } catch (error) {
+        return ContentService.createTextOutput(JSON.stringify({ 
+          success: false, 
+          error: error.message 
+        })).setMimeType(ContentService.MimeType.JSON);
+      }
+    }
+    -->
+</body>
+</html>
