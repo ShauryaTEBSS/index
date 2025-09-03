@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Dashboard</title>
+    <link rel="icon" type="image/x-icon" href="/static/favicon.ico">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/feather-icons/dist/feather.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/animejs/lib/anime.iife.min.js"></script>
+    <script src="https://unpkg.com/feather-icons"></script>
+    <style>
+        .test-iframe {
+            transition: all 0.3s ease;
+        }
+        .tab-active {
+            border-bottom: 3px solid #3b82f6;
+        }
+    </style>
+</head>
+<body class="bg-gray-50 min-h-screen">
+    <header class="bg-white shadow-sm">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+            <h1 class="text-2xl font-bold text-gray-800">Test Dashboard</h1>
+        </div>
+    </header>
+
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <!-- Tabs Navigation -->
+        <div class="border-b border-gray-200 mb-6">
+            <nav class="-mb-px flex space-x-8 overflow-x-auto">
+                <button class="tab-button whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm tab-active" data-tab="all">
+                    All Tests
+                </button>
+                <button class="tab-button whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm" data-tab="math">
+                    Mathematics
+                </button>
+                <button class="tab-button whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm" data-tab="science">
+                    Science
+                </button>
+                <button class="tab-button whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm" data-tab="language">
+                    Language
+                </button>
+            </nav>
+        </div>
+
+        <!-- Tests Table -->
+        <div class="bg-white shadow rounded-lg overflow-hidden">
+            <table class="min-w-full divide-y divide-gray-200">
+                <thead class="bg-gray-50">
+                    <tr>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Test Name</th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date Added</th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Category</th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Action</th>
+                    </tr>
+                </thead>
+                <tbody class="bg-white divide-y divide-gray-200">
+                    <tr data-category="math">
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <div class="text-sm font-medium text-gray-900">Algebra Basics</div>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <div class="text-sm text-gray-500">2023-10-15</div>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">Mathematics</span>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm">
+                            <button class="give-test-btn bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md text-sm font-medium transition duration-200" data-url="https://example.com/test/algebra-basics">
+                                Give Test
+                            </button>
+                        </td>
+                    </tr>
+                    <tr data-category="science">
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <div class="text-sm font-medium text-gray-900">Physics Fundamentals</div>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <div class="text-sm text-gray-500">2023-10-10</div>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">Science</span>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm">
+                            <button class="give-test-btn bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md text-sm font-medium transition duration-200" data-url="https://example.com/test/physics-fundamentals">
+                                Give Test
+                            </button>
+                        </td>
+                    </tr>
+                    <tr data-category="language">
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <div class="text-sm font-medium text-gray-900">English Grammar</div>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <div class="text-sm text-gray-500">2023-10-05</div>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-purple-100 text-purple-800">Language</span>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm">
+                            <button class="give-test-btn bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md text-sm font-medium transition duration-200" data-url="https://example.com/test/english-grammar">
+                                Give Test
+                            </button>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Test Iframe Container -->
+        <div id="test-container" class="hidden mt-8 bg-white shadow rounded-lg p-4">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-lg font-medium text-gray-900" id="test-title">Test Preview</h3>
+                <button id="close-test" class="text-gray-400 hover:text-gray-600">
+                    <i data-feather="x"></i>
+                </button>
+            </div>
+            <iframe id="test-iframe" class="test-iframe w-full h-96 rounded-md border border-gray-200" frameborder="0"></iframe>
+        </div>
+    </main>
+
+    <script>
+        // Initialize animations and icons
+        document.addEventListener('DOMContentLoaded', function() {
+            AOS.init();
+            feather.replace();
+            
+            // Tab functionality
+            const tabs = document.querySelectorAll('.tab-button');
+            const testRows = document.querySelectorAll('tbody tr');
+            
+            tabs.forEach(tab => {
+                tab.addEventListener('click', () => {
+                    // Update active tab
+                    tabs.forEach(t => t.classList.remove('tab-active', 'text-blue-600', 'border-blue-500'));
+                    tab.classList.add('tab-active', 'text-blue-600', 'border-blue-500');
+                    
+                    // Filter tests
+                    const category = tab.dataset.tab;
+                    testRows.forEach(row => {
+                        if (category === 'all' || row.dataset.category === category) {
+                            row.classList.remove('hidden');
+                        } else {
+                            row.classList.add('hidden');
+                        }
+                    });
+                });
+            });
+            
+            // Test iframe functionality
+            const testButtons = document.querySelectorAll('.give-test-btn');
+            const testContainer = document.getElementById('test-container');
+            const testIframe = document.getElementById('test-iframe');
+            const testTitle = document.getElementById('test-title');
+            const closeTest = document.getElementById('close-test');
+            
+            testButtons.forEach(button => {
+                button.addEventListener('click', () => {
+                    const testName = button.closest('tr').querySelector('td:first-child').textContent;
+                    testTitle.textContent = testName;
+                    testIframe.src = button.dataset.url;
+                    testContainer.classList.remove('hidden');
+                    testContainer.scrollIntoView({ behavior: 'smooth' });
+                });
+            });
+            
+            closeTest.addEventListener('click', () => {
+                testContainer.classList.add('hidden');
+                testIframe.src = '';
+            });
+        });
+    </script>
+</body>
+</html><!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Dashboard</title>
+    <link rel="icon" type="image/x-icon" href="/static/favicon.ico">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/feather-icons/dist/feather.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/animejs/lib/anime.iife.min.js"></script>
+    <script src="https://unpkg.com/feather-icons"></script>
+    <style>
+        .test-iframe {
+            transition: all 0.3s ease;
+        }
+        .tab-active {
+            border-bottom: 3px solid #3b82f6;
+        }
+    </style>
+</head>
+<body class="bg-gray-50 min-h-screen">
+    <header class="bg-white shadow-sm">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+            <h1 class="text-2xl font-bold text-gray-800">Test Dashboard</h1>
+        </div>
+    </header>
+
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <!-- Tabs Navigation -->
+        <div class="border-b border-gray-200 mb-6">
+            <nav class="-mb-px flex space-x-8 overflow-x-auto">
+                <button class="tab-button whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm tab-active" data-tab="all">
+                    All Tests
+                </button>
+                <button class="tab-button whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm" data-tab="math">
+                    Mathematics
+                </button>
+                <button class="tab-button whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm" data-tab="science">
+                    Science
+                </button>
+                <button class="tab-button whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm" data-tab="language">
+                    Language
+                </button>
+            </nav>
+        </div>
+
+        <!-- Tests Table -->
+        <div class="bg-white shadow rounded-lg overflow-hidden">
+            <table class="min-w-full divide-y divide-gray-200">
+                <thead class="bg-gray-50">
+                    <tr>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Test Name</th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date Added</th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Category</th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Action</th>
+                    </tr>
+                </thead>
+                <tbody class="bg-white divide-y divide-gray-200">
+                    <tr data-category="math">
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <div class="text-sm font-medium text-gray-900">Algebra Basics</div>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <div class="text-sm text-gray-500">2023-10-15</div>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">Mathematics</span>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm">
+                            <button class="give-test-btn bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md text-sm font-medium transition duration-200" data-url="https://example.com/test/algebra-basics">
+                                Give Test
+                            </button>
+                        </td>
+                    </tr>
+                    <tr data-category="science">
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <div class="text-sm font-medium text-gray-900">Physics Fundamentals</div>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <div class="text-sm text-gray-500">2023-10-10</div>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">Science</span>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm">
+                            <button class="give-test-btn bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md text-sm font-medium transition duration-200" data-url="https://example.com/test/physics-fundamentals">
+                                Give Test
+                            </button>
+                        </td>
+                    </tr>
+                    <tr data-category="language">
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <div class="text-sm font-medium text-gray-900">English Grammar</div>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <div class="text-sm text-gray-500">2023-10-05</div>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-purple-100 text-purple-800">Language</span>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm">
+                            <button class="give-test-btn bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md text-sm font-medium transition duration-200" data-url="https://shaurya.dpdns.org/exam">
+                                Give Test
+                            </button>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Test Iframe Container -->
+        <div id="test-container" class="hidden mt-8 bg-white shadow rounded-lg p-4">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-lg font-medium text-gray-900" id="test-title">Test Preview</h3>
+                <button id="close-test" class="text-gray-400 hover:text-gray-600">
+                    <i data-feather="x"></i>
+                </button>
+            </div>
+            <iframe id="test-iframe" class="test-iframe w-full h-96 rounded-md border border-gray-200" frameborder="0"></iframe>
+        </div>
+    </main>
+
+    <script>
+        // Initialize animations and icons
+        document.addEventListener('DOMContentLoaded', function() {
+            AOS.init();
+            feather.replace();
+            
+            // Tab functionality
+            const tabs = document.querySelectorAll('.tab-button');
+            const testRows = document.querySelectorAll('tbody tr');
+            
+            tabs.forEach(tab => {
+                tab.addEventListener('click', () => {
+                    // Update active tab
+                    tabs.forEach(t => t.classList.remove('tab-active', 'text-blue-600', 'border-blue-500'));
+                    tab.classList.add('tab-active', 'text-blue-600', 'border-blue-500');
+                    
+                    // Filter tests
+                    const category = tab.dataset.tab;
+                    testRows.forEach(row => {
+                        if (category === 'all' || row.dataset.category === category) {
+                            row.classList.remove('hidden');
+                        } else {
+                            row.classList.add('hidden');
+                        }
+                    });
+                });
+            });
+            
+            // Test iframe functionality
+            const testButtons = document.querySelectorAll('.give-test-btn');
+            const testContainer = document.getElementById('test-container');
+            const testIframe = document.getElementById('test-iframe');
+            const testTitle = document.getElementById('test-title');
+            const closeTest = document.getElementById('close-test');
+            
+            testButtons.forEach(button => {
+                button.addEventListener('click', () => {
+                    const testName = button.closest('tr').querySelector('td:first-child').textContent;
+                    testTitle.textContent = testName;
+                    testIframe.src = button.dataset.url;
+                    testContainer.classList.remove('hidden');
+                    testContainer.scrollIntoView({ behavior: 'smooth' });
+                });
+            });
+            
+            closeTest.addEventListener('click', () => {
+                testContainer.classList.add('hidden');
+                testIframe.src = '';
+            });
+        });
+    </script>
+</body>
+</html>
