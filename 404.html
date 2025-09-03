@@ -1,0 +1,163 @@
+<!DOCTYPE html><html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>404 - Page Not Found</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    body {
+      height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: linear-gradient(135deg, #0f172a, #3b0764, #1e1b4b);
+      font-family: "Segoe UI", sans-serif;
+      color: #fff;
+      overflow: hidden;
+    }
+    .container {
+      max-width: 1000px;
+      width: 100%;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 2rem;
+      align-items: center;
+      padding: 1rem;
+    }
+    .card {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      border-radius: 20px;
+      padding: 2rem;
+      backdrop-filter: blur(8px);
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+      animation: fadeInUp 1s ease;
+    }
+    .card h1 {
+      font-size: 2.5rem;
+      margin-bottom: 1rem;
+    }
+    .card p {
+      margin-bottom: 1rem;
+      color: rgba(255, 255, 255, 0.8);
+    }
+    .buttons a {
+      display: inline-flex;
+      align-items: center;
+      margin-right: 1rem;
+      padding: 0.6rem 1.2rem;
+      border-radius: 10px;
+      text-decoration: none;
+      font-size: 0.9rem;
+      transition: background 0.3s;
+    }
+    .buttons a.home {
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      color: #fff;
+    }
+    .buttons a.home:hover {
+      background: rgba(255, 255, 255, 0.2);
+    }
+    .buttons a.report {
+      background: transparent;
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      color: #fff;
+    }
+    .buttons a.report:hover {
+      background: rgba(255, 255, 255, 0.1);
+    }
+    .scene {
+      position: relative;
+      height: 400px;
+    }
+    .star {
+      position: absolute;
+      background: white;
+      border-radius: 50%;
+      opacity: 0.2;
+      animation: twinkle 3s infinite ease-in-out;
+    }
+    @keyframes twinkle {
+      0%, 100% { opacity: 0.2; }
+      50% { opacity: 1; }
+    }
+    .rocket {
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      width: 80px;
+      transform: translate(-50%, -50%);
+      animation: float 4s infinite ease-in-out;
+    }
+    @keyframes float {
+      0%, 100% { transform: translate(-50%, -50%) rotate(-8deg); }
+      50% { transform: translate(-45%, -55%) rotate(6deg); }
+    }
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .floating-card {
+      position: absolute;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.15);
+      padding: 1rem;
+      border-radius: 15px;
+      width: 250px;
+      text-align: center;
+      font-size: 0.85rem;
+      animation: updown 5s infinite ease-in-out;
+    }
+    @keyframes updown {
+      0%, 100% { transform: translate(-50%, 10px); }
+      50% { transform: translate(-50%, -6px); }
+    }
+    footer {
+      position: fixed;
+      bottom: 10px;
+      left: 10px;
+      font-size: 0.75rem;
+      color: rgba(255, 255, 255, 0.7);
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="card">
+      <h1>Oops — page not found</h1>
+      <p>Looks like the page you're trying to reach took a detour into the void.</p>
+      <div class="buttons">
+        <a href="/" class="home">🏠 Go Home</a>
+        <a href="/contact" class="report">Report Issue</a>
+      </div>
+      <div style="margin-top:1rem; font-size:0.8rem; color:rgba(255,255,255,0.6)">Error code: 404 — Not Found</div>
+    </div>
+    <div class="scene" id="scene">
+      <img src="https://cdn-icons-png.flaticon.com/512/321/321817.png" alt="rocket" class="rocket" />
+      <div class="floating-card">💡 Try checking the URL or return to homepage</div>
+    </div>
+  </div>
+  <footer>If you think this is an error, <a href="/contact" style="color:#93c5fd">let us know</a>.</footer>  <script>
+    // Generate random stars
+    const scene = document.getElementById('scene');
+    for (let i = 0; i < 30; i++) {
+      const star = document.createElement('div');
+      const size = Math.random() * 3 + 1;
+      star.classList.add('star');
+      star.style.width = size + 'px';
+      star.style.height = size + 'px';
+      star.style.top = Math.random() * 100 + '%';
+      star.style.left = Math.random() * 100 + '%';
+      star.style.animationDuration = (2 + Math.random() * 3) + 's';
+      scene.appendChild(star);
+    }
+  </script></body>
+</html>
