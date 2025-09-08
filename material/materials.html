@@ -1,0 +1,1134 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Shaurya  Study Materials | Shaurya Digital Services</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Free Shaurya  study materials for UG and PG students">
+    <meta name="keywords" content="Shaurya , Physical Shaurya , Human Shaurya , GIS, Remote Sensing, Study Materials">
+    <meta name="author" content="Department of Shaurya , SBPG College">
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    animation: {
+                        'float': 'float 6s ease-in-out infinite',
+                        'float-reverse': 'float-reverse 5s ease-in-out infinite',
+                        'wave': 'wave 2s linear infinite',
+                        'blink': 'blink 1.5s ease-in-out infinite',
+                        'tilt': 'tilt 10s ease-in-out infinite',
+                    },
+                    keyframes: {
+                        float: {
+                            '0%, 100%': { transform: 'translateY(0)' },
+                            '50%': { transform: 'translateY(-10px)' },
+                        },
+                        'float-reverse': {
+                            '0%, 100%': { transform: 'translateY(0)' },
+                            '50%': { transform: 'translateY(10px)' },
+                        },
+                        wave: {
+                            '0%': { transform: 'rotate(0deg)' },
+                            '10%': { transform: 'rotate(14deg)' },
+                            '20%': { transform: 'rotate(-8deg)' },
+                            '30%': { transform: 'rotate(14deg)' },
+                            '40%': { transform: 'rotate(-4deg)' },
+                            '50%': { transform: 'rotate(10deg)' },
+                            '60%': { transform: 'rotate(0deg)' },
+                            '100%': { transform: 'rotate(0deg)' },
+                        },
+                        blink: {
+                            '0%, 100%': { opacity: '1' },
+                            '50%': { opacity: '0.5' },
+                        },
+                        tilt: {
+                            '0%, 100%': { transform: 'rotate(-1deg)' },
+                            '50%': { transform: 'rotate(1deg)' },
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Playfair+Display:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Custom Styles -->
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+        }
+        
+        .heading-font {
+            font-family: 'Playfair Display', serif;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        @keyframes slideIn {
+            from { transform: translateX(-20px); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+        
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+        
+        @keyframes gradient {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+        
+        @keyframes spin {
+            to { transform: 'rotate(360deg)'; }
+        }
+        
+        @keyframes shimmer {
+            0% { background-position: -1000px 0; }
+            100% { background-position: 1000px 0; }
+        }
+        
+        @keyframes confetti-fall {
+            0% {
+                transform: translateY(-100vh) rotate(0deg);
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(100vh) rotate(360deg);
+                opacity: 0;
+            }
+        }
+        
+        .animate-fadeIn {
+            animation: fadeIn 0.6s ease-out forwards;
+        }
+        
+        .animate-slideIn {
+            animation: slideIn 0.5s ease-out forwards;
+        }
+        
+        .animate-pulse {
+            animation: pulse 2s infinite;
+        }
+        
+        .gradient-bg {
+            background: linear-gradient(-45deg, #1e3a8a, #1e40af, #1d4ed8, #3b82f6);
+            background-size: 400% 400%;
+            animation: gradient 15s ease infinite;
+        }
+        
+        .card-hover {
+            transition: all 0.3s ease;
+            transform-style: preserve-3d;
+            perspective: 1000px;
+        }
+        
+        .card-hover:hover {
+            transform: translateY(-5px) rotateX(1deg) rotateY(1deg);
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+        }
+        
+        .search-highlight {
+            background-color: #fef08a;
+            padding: 0 2px;
+            border-radius: 2px;
+            animation: blink 1.5s ease-in-out infinite;
+        }
+        
+        .loading-spinner {
+            border-top-color: #3b82f6;
+            animation: spin 1s linear infinite;
+        }
+        
+        .shimmer {
+            background: linear-gradient(to right, #ffffff10 8%, #ffffff20 18%, #ffffff10 33%);
+            background-size: 1000px 100%;
+            animation: shimmer 2s infinite linear;
+        }
+        
+        .glow {
+            box-shadow: 0 0 15px rgba(59, 130, 246, 0.5);
+        }
+        
+        .glow:hover {
+            box-shadow: 0 0 25px rgba(59, 130, 246, 0.8);
+        }
+        
+        .wave-animation {
+            animation: wave 2s linear infinite;
+            transform-origin: 70% 70%;
+            display: inline-block;
+        }
+        
+        .floating {
+            animation: float 6s ease-in-out infinite;
+        }
+        
+        .floating-reverse {
+            animation: float-reverse 5s ease-in-out infinite;
+        }
+        
+        .tilt-animation {
+            animation: tilt 10s ease-in-out infinite;
+        }
+        
+        .access-code-input {
+            letter-spacing: 5px;
+            font-family: monospace;
+            font-size: 1.5rem;
+            text-align: center;
+        }
+        
+        .access-code-input::placeholder {
+            letter-spacing: normal;
+        }
+        
+        .particle {
+            position: absolute;
+            background-color: rgba(255, 255, 255, 0.5);
+            border-radius: 50%;
+            pointer-events: none;
+        }
+        
+        .confetti {
+            position: fixed;
+            width: 10px;
+            height: 10px;
+            background-color: #f00;
+            opacity: 0;
+            z-index: 9999;
+            animation: confetti-fall 5s linear forwards;
+        }
+        
+        .tab-active {
+            border-bottom: 3px solid #3b82f6;
+            color: white;
+            font-weight: 500;
+        }
+        
+        .tab-inactive {
+            border-bottom: 3px solid transparent;
+            color: rgba(255, 255, 255, 0.7);
+        }
+        
+        .saved-item {
+            transition: all 0.3s ease;
+        }
+        
+        .saved-item:hover {
+            background-color: rgba(255, 255, 255, 0.05);
+        }
+        
+        .empty-saved {
+            opacity: 0.6;
+            text-align: center;
+            padding: 3rem 0;
+        }
+    </style>
+</head>
+<body class="min-h-screen gradient-bg text-gray-100 overflow-x-hidden">
+    <!-- Floating Particles Background -->
+    <div id="particles-container" class="fixed inset-0 overflow-hidden pointer-events-none"></div>
+    
+    <!-- Header -->
+    <header class="py-6 px-4 sm:px-6 lg:px-8 relative z-10">
+        <div class="container mx-auto flex justify-between items-center">
+            <h1 class="text-2xl sm:text-3xl font-bold animate-slideIn heading-font">
+                <i class="fas fa-globe-asia mr-2 wave-animation"></i> Shaurya  Study Materials
+            </h1>
+            <div class="flex items-center space-x-4">
+                <button id="accessCodeBtn" class="bg-white/10 hover:bg-white/20 px-4 py-2 rounded-lg transition-all flex items-center glow">
+                    <i class="fas fa-key mr-2"></i> Access Code
+                </button>
+                <a href="https://Shaurya -sbpgcollege.github.io/home" class="bg-white/10 hover:bg-white/20 px-4 py-2 rounded-lg transition-all flex items-center glow">
+                    <i class="fas fa-home mr-2"></i> Home
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="container mx-auto px-4 sm:px-6 lg:px-8 py-8 relative z-10">
+        <!-- Tabs Navigation -->
+        <div class="flex border-b border-white/10 mb-8">
+            <button id="browseTab" class="tab-active px-6 py-3 text-lg">Browse Materials</button>
+            <button id="savedTab" class="tab-inactive px-6 py-3 text-lg flex items-center">
+                <i class="fas fa-bookmark mr-2"></i> Saved for Later
+                <span id="savedCount" class="ml-2 bg-blue-600 text-xs rounded-full px-2 py-1">0</span>
+            </button>
+        </div>
+        
+        <!-- Browse Materials Section -->
+        <div id="browseSection">
+            <!-- Search and Filter Section -->
+            <div class="mb-10 bg-white/10 backdrop-blur-sm rounded-xl p-6 shadow-lg animate-fadeIn border border-white/10 tilt-animation">
+                <div class="flex flex-col md:flex-row gap-4">
+                    <div class="flex-1 relative">
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <i class="fas fa-search text-gray-400 floating"></i>
+                        </div>
+                        <input type="text" id="searchInput" placeholder="Search materials by topic, author, or keyword..."
+                                class="w-full pl-10 pr-4 py-3 bg-white/10 border border-white/20 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-white placeholder-gray-300 glow">
+                    </div>
+                    <select id="categoryFilter" class="bg-white/10 border border-white/20 text-white rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent glow">
+                        <option value="all">All Categories</option>
+                        <option value="physical">Physical Shaurya </option>
+                        <option value="human">Human Shaurya </option>
+                        <option value="gis">GIS & Remote Sensing</option>
+                        <option value="economic">Economic Shaurya </option>
+                        <option value="environmental">Environmental Shaurya </option>
+                        <option value="regional">Regional Shaurya </option>
+                    </select>
+                </div>
+                            
+                <div class="mt-4 flex flex-wrap gap-2">
+                    <span class="text-sm text-white/80">Quick filters:</span>
+                    <button class="filter-tag px-3 py-1 bg-blue-600/30 hover:bg-blue-600/50 rounded-full text-sm transition-all glow" data-tag="notes">Notes</button>
+                    <button class="filter-tag px-3 py-1 bg-blue-600/30 hover:bg-blue-600/50 rounded-full text-sm transition-all glow" data-tag="lecture">Lecture Slides</button>
+                    <button class="filter-tag px-3 py-1 bg-blue-600/30 hover:bg-blue-600/50 rounded-full text-sm transition-all glow" data-tag="research">Research Papers</button>
+                    <button class="filter-tag px-3 py-1 bg-blue-600/30 hover:bg-blue-600/50 rounded-full text-sm transition-all glow" data-tag="map">Maps</button>
+                </div>
+            </div>
+
+            <!-- Download Limit Indicator -->
+            <div id="downloadLimitContainer" class="mb-6 bg-white/10 backdrop-blur-sm rounded-xl p-4 shadow-lg border border-white/10 animate-fadeIn">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center">
+                        <i class="fas fa-download text-blue-400 mr-3 text-xl floating"></i>
+                        <div>
+                            <h3 class="font-medium">Your Download Limit</h3>
+                            <p class="text-sm text-white/70">Anonymous users can download up to 3 files per day</p>
+                        </div>
+                    </div>
+                    <div class="flex items-center">
+                        <div class="w-32 bg-white/20 rounded-full h-4 mr-3">
+                            <div id="downloadProgress" class="bg-blue-500 h-4 rounded-full transition-all duration-500" style="width: 0%"></div>
+                        </div>
+                        <span id="downloadCount" class="font-bold">0/3</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Loading Indicator -->
+            <div id="loadingIndicator" class="flex justify-center items-center py-10 hidden">
+                <div class="flex flex-col items-center">
+                    <div class="w-16 h-16 border-4 border-white/30 rounded-full loading-spinner mb-4"></div>
+                    <p class="text-white/80">Loading materials...</p>
+                    <div class="w-64 h-2 bg-white/10 rounded-full mt-4 overflow-hidden">
+                        <div class="h-full shimmer"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Materials Grid -->
+            <div id="materialsGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Materials will be dynamically loaded here -->
+            </div>
+
+            <!-- No Results Message -->
+            <div id="noResults" class="hidden text-center py-10">
+                <div class="inline-block p-6 bg-white/10 rounded-xl backdrop-blur-sm border border-white/10">
+                    <i class="fas fa-file-alt text-4xl mb-4 text-white/50 floating"></i>
+                    <h3 class="text-xl font-semibold mb-2">No materials found</h3>
+                    <p class="text-white/70">Try adjusting your search or filter criteria</p>
+                </div>
+            </div>
+
+            <!-- Pagination -->
+            <div id="pagination" class="mt-10 flex justify-center gap-2 hidden">
+                <button class="px-4 py-2 bg-white/10 hover:bg-white/20 rounded-lg transition-all glow"><i class="fas fa-chevron-left"></i></button>
+                <button class="px-4 py-2 bg-blue-600 rounded-lg glow">1</button>
+                <button class="px-4 py-2 bg-white/10 hover:bg-white/20 rounded-lg transition-all glow">2</button>
+                <button class="px-4 py-2 bg-white/10 hover:bg-white/20 rounded-lg transition-all glow">3</button>
+                <button class="px-4 py-2 bg-white/10 hover:bg-white/20 rounded-lg transition-all glow"><i class="fas fa-chevron-right"></i></button>
+            </div>
+        </div>
+        
+        <!-- Saved for Later Section -->
+        <div id="savedSection" class="hidden">
+            <div class="bg-white/10 backdrop-blur-sm rounded-xl p-6 shadow-lg border border-white/10">
+                <div class="flex justify-between items-center mb-6">
+                    <h2 class="text-xl font-bold flex items-center">
+                        <i class="fas fa-bookmark text-blue-400 mr-3"></i> Your Saved Materials
+                    </h2>
+                    <button id="clearSaved" class="text-sm bg-red-900/30 hover:bg-red-900/50 px-3 py-1 rounded-lg transition-all">
+                        <i class="fas fa-trash-alt mr-1"></i> Clear All
+                    </button>
+                </div>
+                
+                <div id="savedMaterialsList" class="space-y-4">
+                    <!-- Saved items will appear here -->
+                    <div class="empty-saved">
+                        <i class="fas fa-bookmark text-4xl mb-4 text-white/50"></i>
+                        <p class="text-lg">Your saved items will appear here</p>
+                        <p class="text-sm mt-2 text-white/60">Click the "Save for Later" button on any material to add it here</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-black/20 py-6 mt-10 backdrop-blur-sm border-t border-white/10">
+        <div class="container mx-auto px-4 text-center">
+            <p class="mb-2">© 2023 Department of Shaurya , SBPG College, Varanasi</p>
+            <div class="flex justify-center space-x-4">
+                <a href="#" class="hover:text-blue-300 transition-colors text-xl"><i class="fab fa-facebook floating"></i></a>
+                <a href="#" class="hover:text-blue-300 transition-colors text-xl"><i class="fab fa-twitter floating-reverse"></i></a>
+                <a href="#" class="hover:text-blue-300 transition-colors text-xl"><i class="fab fa-instagram floating"></i></a>
+                <a href="#" class="hover:text-blue-300 transition-colors text-xl"><i class="fas fa-envelope floating-reverse"></i></a>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Download Modal -->
+    <div id="downloadModal" class="fixed inset-0 bg-black/70 z-50 flex items-center justify-center hidden backdrop-blur-sm">
+        <div class="bg-gray-900 rounded-xl max-w-md w-full mx-4 animate-fadeIn border border-white/10">
+            <div class="p-6">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="text-xl font-bold heading-font" id="modalTitle">Download Material</h3>
+                    <button id="closeModal" class="text-white/50 hover:text-white text-xl"><i class="fas fa-times"></i></button>
+                </div>
+                <div class="mb-6">
+                    <p id="modalDescription" class="text-white/80 mb-4">You are about to download:</p>
+                    <div class="bg-white/5 p-4 rounded-lg border border-white/10">
+                        <div class="flex items-center">
+                            <i class="fas fa-file-pdf text-3xl text-red-500 mr-4 floating"></i>
+                            <div>
+                                <h4 class="font-medium" id="modalFileName">Shaurya  of India - Complete Notes.pdf</h4>
+                                <p class="text-sm text-white/60" id="modalFileSize">4.2 MB</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="flex flex-col sm:flex-row gap-3">
+                    <a id="downloadBtn" href="#" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 px-4 rounded-lg transition-colors flex items-center justify-center gap-2 glow">
+                        <i class="fas fa-download"></i> Download Now
+                    </a>
+                    <button id="saveForLaterBtn" class="flex-1 border border-white/20 hover:bg-white/10 text-white font-medium py-3 px-4 rounded-lg transition-colors glow">
+                        <i class="fas fa-bookmark"></i> Save for Later
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Access Code Modal -->
+    <div id="accessCodeModal" class="fixed inset-0 bg-black/70 z-50 flex items-center justify-center hidden backdrop-blur-sm">
+        <div class="bg-gray-900 rounded-xl max-w-md w-full mx-4 animate-fadeIn border border-white/10">
+            <div class="p-6">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="text-xl font-bold heading-font">Enter Access Code</h3>
+                    <button id="closeAccessModal" class="text-white/50 hover:text-white text-xl"><i class="fas fa-times"></i></button>
+                </div>
+                <div class="mb-6">
+                    <p class="text-white/80 mb-4">Enter your 7-digit access code to remove download limits:</p>
+                    <input type="text" id="accessCodeInput" placeholder="XXXXXXX" maxlength="7" 
+                           class="w-full px-4 py-3 bg-white/10 border border-white/20 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent access-code-input glow">
+                    <p id="accessCodeError" class="text-red-400 text-sm mt-2 hidden"></p>
+                </div>
+                <div class="flex flex-col sm:flex-row gap-3">
+                    <button id="submitAccessCode" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 px-4 rounded-lg transition-colors glow">
+                        <i class="fas fa-check mr-2"></i> Submit Code
+                    </button>
+                    <button class="flex-1 border border-white/20 hover:bg-white/10 text-white font-medium py-3 px-4 rounded-lg transition-colors glow">
+                        <i class="fas fa-question-circle mr-2"></i> Get Help
+                    </button>
+                </div>
+                <div id="accessSuccess" class="mt-4 p-4 bg-green-900/50 rounded-lg border border-green-500 hidden">
+                    <div class="flex items-center">
+                        <i class="fas fa-check-circle text-green-400 mr-3 text-xl"></i>
+                        <div>
+                            <h4 class="font-medium">Access Granted!</h4>
+                            <p class="text-sm text-white/80">Download limits have been removed.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Sample data - in a real implementation, this would come from your server/API
+        const materialsData = [
+            {
+                id: 1,
+                title: "Sample paper Class 9th Matyhs HY SARA",
+                author: "Shaurya Singh",
+                category: "sample_paper",
+                tags: ["sample-paper", "9th"],
+                description: "Complete Sample paper for Class 9th for half yealy subject maths",
+                file: "maths01-sp.pdf",
+                size: "3 MB",
+                pages: 11,
+                downloads: 101,
+                date: "2025-08-09"
+            }
+        ];
+
+        // Valid access codes (7-digit random codes)
+        const validAccessCodes = [
+            "7X9K2L1",
+            "3P5Q8R2",
+            "9M4N6B7",
+            "2D8F3G5",
+            "6H1J4K9",
+            "4L7M2N8",
+            "8P3Q6R1",
+            "5S2T9U4",
+            "1V6W3X7",
+            "9Y4Z2A5"
+        ];
+
+        // DOM Elements
+        const materialsGrid = document.getElementById('materialsGrid');
+        const searchInput = document.getElementById('searchInput');
+        const categoryFilter = document.getElementById('categoryFilter');
+        const filterTags = document.querySelectorAll('.filter-tag');
+        const noResults = document.getElementById('noResults');
+        const loadingIndicator = document.getElementById('loadingIndicator');
+        const downloadModal = document.getElementById('downloadModal');
+        const closeModal = document.getElementById('closeModal');
+        const downloadBtn = document.getElementById('downloadBtn');
+        const saveForLaterBtn = document.getElementById('saveForLaterBtn');
+        const modalTitle = document.getElementById('modalTitle');
+        const modalDescription = document.getElementById('modalDescription');
+        const modalFileName = document.getElementById('modalFileName');
+        const modalFileSize = document.getElementById('modalFileSize');
+        const accessCodeBtn = document.getElementById('accessCodeBtn');
+        const accessCodeModal = document.getElementById('accessCodeModal');
+        const closeAccessModal = document.getElementById('closeAccessModal');
+        const accessCodeInput = document.getElementById('accessCodeInput');
+        const submitAccessCode = document.getElementById('submitAccessCode');
+        const accessCodeError = document.getElementById('accessCodeError');
+        const accessSuccess = document.getElementById('accessSuccess');
+        const downloadLimitContainer = document.getElementById('downloadLimitContainer');
+        const downloadProgress = document.getElementById('downloadProgress');
+        const downloadCount = document.getElementById('downloadCount');
+        const particlesContainer = document.getElementById('particles-container');
+        const browseTab = document.getElementById('browseTab');
+        const savedTab = document.getElementById('savedTab');
+        const browseSection = document.getElementById('browseSection');
+        const savedSection = document.getElementById('savedSection');
+        const savedMaterialsList = document.getElementById('savedMaterialsList');
+        const clearSaved = document.getElementById('clearSaved');
+        const savedCount = document.getElementById('savedCount');
+
+        // Current filter state
+        let currentSearch = '';
+        let currentCategory = 'all';
+        let currentTags = [];
+        
+        // Download tracking
+        let downloadsToday = 0;
+        const MAX_ANONYMOUS_DOWNLOADS = 3;
+        let hasPremiumAccess = false;
+        
+        // Saved materials
+        let savedMaterials = [];
+        let currentMaterialInModal = null;
+        
+        // Initialize the page
+        document.addEventListener('DOMContentLoaded', () => {
+            // Load saved materials and download count from localStorage
+            const today = new Date().toDateString();
+            const storedData = localStorage.getItem('downloadData');
+            const storedSaved = localStorage.getItem('savedMaterials');
+            
+            if (storedData) {
+                const { date, count, premium } = JSON.parse(storedData);
+                if (date === today) {
+                    downloadsToday = count;
+                    hasPremiumAccess = premium;
+                }
+            }
+            
+            if (storedSaved) {
+                savedMaterials = JSON.parse(storedSaved);
+                updateSavedCount();
+                renderSavedMaterials();
+            }
+            
+            updateDownloadLimitDisplay();
+            createParticles();
+            renderMaterials(materialsData);
+            
+            // Set up event listeners
+            searchInput.addEventListener('input', (e) => {
+                currentSearch = e.target.value.toLowerCase();
+                filterMaterials();
+            });
+            
+            categoryFilter.addEventListener('change', (e) => {
+                currentCategory = e.target.value;
+                filterMaterials();
+            });
+            
+            filterTags.forEach(tag => {
+                tag.addEventListener('click', () => {
+                    const tagValue = tag.dataset.tag;
+                    if (currentTags.includes(tagValue)) {
+                        currentTags = currentTags.filter(t => t !== tagValue);
+                        tag.classList.remove('bg-blue-600/50', 'text-white');
+                        tag.classList.add('bg-blue-600/30');
+                    } else {
+                        currentTags.push(tagValue);
+                        tag.classList.remove('bg-blue-600/30');
+                        tag.classList.add('bg-blue-600/50', 'text-white');
+                    }
+                    filterMaterials();
+                });
+            });
+            
+            closeModal.addEventListener('click', () => {
+                downloadModal.classList.add('hidden');
+                currentMaterialInModal = null;
+            });
+            
+            saveForLaterBtn.addEventListener('click', () => {
+                if (currentMaterialInModal) {
+                    saveMaterial(currentMaterialInModal);
+                }
+            });
+            
+            accessCodeBtn.addEventListener('click', () => {
+                accessCodeModal.classList.remove('hidden');
+                accessCodeInput.focus();
+            });
+            
+            closeAccessModal.addEventListener('click', () => {
+                accessCodeModal.classList.add('hidden');
+                accessCodeError.classList.add('hidden');
+                accessSuccess.classList.add('hidden');
+                accessCodeInput.value = '';
+            });
+            
+            submitAccessCode.addEventListener('click', () => {
+                const enteredCode = accessCodeInput.value.trim().toUpperCase();
+                
+                if (enteredCode.length !== 7) {
+                    accessCodeError.textContent = "Please enter a 7-digit code";
+                    accessCodeError.classList.remove('hidden');
+                    return;
+                }
+                
+                if (validAccessCodes.includes(enteredCode)) {
+                    // Valid code
+                    hasPremiumAccess = true;
+                    accessCodeError.classList.add('hidden');
+                    accessSuccess.classList.remove('hidden');
+                    
+                    // Save to localStorage
+                    const today = new Date().toDateString();
+                    localStorage.setItem('downloadData', JSON.stringify({
+                        date: today,
+                        count: downloadsToday,
+                        premium: true
+                    }));
+                    
+                    // Update UI
+                    updateDownloadLimitDisplay();
+                    
+                    // Show confetti celebration
+                    createConfetti();
+                    
+                    // Close modal after delay
+                    setTimeout(() => {
+                        accessCodeModal.classList.add('hidden');
+                        accessSuccess.classList.add('hidden');
+                        accessCodeInput.value = '';
+                    }, 2000);
+                } else {
+                    // Invalid code
+                    accessCodeError.textContent = "Invalid access code. Please try again.";
+                    accessCodeError.classList.remove('hidden');
+                    
+                    // Shake animation for error
+                    accessCodeInput.classList.add('animate-shake');
+                    setTimeout(() => {
+                        accessCodeInput.classList.remove('animate-shake');
+                    }, 500);
+                }
+            });
+            
+            // Restrict access code input to alphanumeric
+            accessCodeInput.addEventListener('input', (e) => {
+                e.target.value = e.target.value.replace(/[^a-zA-Z0-9]/g, '').toUpperCase();
+            });
+            
+            // Tab switching
+            browseTab.addEventListener('click', () => {
+                browseTab.classList.add('tab-active');
+                browseTab.classList.remove('tab-inactive');
+                savedTab.classList.add('tab-inactive');
+                savedTab.classList.remove('tab-active');
+                browseSection.classList.remove('hidden');
+                savedSection.classList.add('hidden');
+            });
+            
+            savedTab.addEventListener('click', () => {
+                savedTab.classList.add('tab-active');
+                savedTab.classList.remove('tab-inactive');
+                browseTab.classList.add('tab-inactive');
+                browseTab.classList.remove('tab-active');
+                savedSection.classList.remove('hidden');
+                browseSection.classList.add('hidden');
+            });
+            
+            // Clear saved materials
+            clearSaved.addEventListener('click', () => {
+                if (savedMaterials.length > 0) {
+                    if (confirm("Are you sure you want to clear all saved materials?")) {
+                        savedMaterials = [];
+                        localStorage.setItem('savedMaterials', JSON.stringify(savedMaterials));
+                        updateSavedCount();
+                        renderSavedMaterials();
+                    }
+                }
+            });
+        });
+
+        // Save material to saved list
+        function saveMaterial(material) {
+            // Check if already saved
+            if (savedMaterials.some(m => m.id === material.id)) {
+                showToast("This material is already saved", "yellow-500");
+                return;
+            }
+            
+            // Add to saved list
+            savedMaterials.push(material);
+            localStorage.setItem('savedMaterials', JSON.stringify(savedMaterials));
+            updateSavedCount();
+            renderSavedMaterials();
+            
+            // Close modal and show success
+            downloadModal.classList.add('hidden');
+            showToast("Material saved for later", "blue-500");
+            currentMaterialInModal = null;
+        }
+        
+        // Update saved count display
+        function updateSavedCount() {
+            savedCount.textContent = savedMaterials.length;
+            if (savedMaterials.length > 0) {
+                savedCount.classList.remove('hidden');
+            } else {
+                savedCount.classList.add('hidden');
+            }
+        }
+        
+        // Render saved materials list
+        function renderSavedMaterials() {
+            savedMaterialsList.innerHTML = '';
+            
+            if (savedMaterials.length === 0) {
+                savedMaterialsList.innerHTML = `
+                    <div class="empty-saved">
+                        <i class="fas fa-bookmark text-4xl mb-4 text-white/50"></i>
+                        <p class="text-lg">Your saved items will appear here</p>
+                        <p class="text-sm mt-2 text-white/60">Click the "Save for Later" button on any material to add it here</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            savedMaterials.forEach((material, index) => {
+                const item = document.createElement('div');
+                item.className = 'bg-white/5 p-4 rounded-lg border border-white/10 saved-item flex justify-between items-center';
+                
+                item.innerHTML = `
+                    <div class="flex-1">
+                        <h3 class="font-medium">${material.title}</h3>
+                        <p class="text-sm text-white/60">By ${material.author} • ${material.size}</p>
+                    </div>
+                    <div class="flex space-x-2">
+                        <button class="download-saved bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded-lg text-sm transition-colors" 
+                                data-id="${material.id}">
+                            <i class="fas fa-download mr-1"></i> Download
+                        </button>
+                        <button class="remove-saved bg-red-900/30 hover:bg-red-900/50 text-white px-3 py-1 rounded-lg text-sm transition-colors" 
+                                data-id="${material.id}">
+                            <i class="fas fa-times mr-1"></i> Remove
+                        </button>
+                    </div>
+                `;
+                
+                savedMaterialsList.appendChild(item);
+            });
+            
+            // Add event listeners to saved item buttons
+            document.querySelectorAll('.download-saved').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    const materialId = e.target.closest('.download-saved').dataset.id;
+                    const material = savedMaterials.find(m => m.id == materialId);
+                    if (material) {
+                        openDownloadModal(material);
+                    }
+                });
+            });
+            
+            document.querySelectorAll('.remove-saved').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    const materialId = e.target.closest('.remove-saved').dataset.id;
+                    savedMaterials = savedMaterials.filter(m => m.id != materialId);
+                    localStorage.setItem('savedMaterials', JSON.stringify(savedMaterials));
+                    updateSavedCount();
+                    renderSavedMaterials();
+                    showToast("Material removed", "red-500");
+                });
+            });
+        }
+
+        // Filter materials based on current criteria
+        function filterMaterials() {
+            loadingIndicator.classList.remove('hidden');
+            materialsGrid.classList.add('opacity-50');
+            
+            // Simulate loading delay
+            setTimeout(() => {
+                let filtered = materialsData.filter(material => {
+                    // Search filter
+                    const matchesSearch = 
+                        material.title.toLowerCase().includes(currentSearch) ||
+                        material.author.toLowerCase().includes(currentSearch) ||
+                        material.description.toLowerCase().includes(currentSearch);
+                    
+                    // Category filter
+                    const matchesCategory = 
+                        currentCategory === 'all' || 
+                        material.category === currentCategory;
+                    
+                    // Tags filter
+                    const matchesTags = 
+                        currentTags.length === 0 || 
+                        currentTags.some(tag => material.tags.includes(tag));
+                    
+                    return matchesSearch && matchesCategory && matchesTags;
+                });
+                
+                renderMaterials(filtered);
+                loadingIndicator.classList.add('hidden');
+                materialsGrid.classList.remove('opacity-50');
+            }, 500);
+        }
+
+        // Render materials to the grid
+        function renderMaterials(materials) {
+            materialsGrid.innerHTML = '';
+            
+            if (materials.length === 0) {
+                noResults.classList.remove('hidden');
+                return;
+            }
+            
+            noResults.classList.add('hidden');
+            
+            materials.forEach((material, index) => {
+                const card = document.createElement('div');
+                card.className = `bg-white/10 backdrop-blur-sm rounded-xl p-6 shadow-lg overflow-hidden card-hover animate-fadeIn`;
+                card.style.animationDelay = `${index * 0.1}s`;
+                
+                // Highlight search term in title and description
+                const highlightedTitle = highlightSearchTerm(material.title, currentSearch);
+                const highlightedDesc = highlightSearchTerm(material.description, currentSearch);
+                
+                // Check if material is already saved
+                const isSaved = savedMaterials.some(m => m.id === material.id);
+                
+                card.innerHTML = `
+                    <div class="flex justify-between items-start mb-4">
+                        <div>
+                            <span class="inline-block px-2 py-1 text-xs font-medium rounded-full mb-2 ${getCategoryColor(material.category)}">
+                                ${getCategoryName(material.category)}
+                            </span>
+                            <h3 class="text-xl font-bold mb-1">${highlightedTitle}</h3>
+                            <p class="text-sm text-white/70 mb-2">By ${material.author}</p>
+                        </div>
+                        <div class="text-4xl text-white/20">
+                            ${getFileIcon(material.tags)}
+                        </div>
+                    </div>
+                    
+                    <p class="text-white/80 mb-4">${highlightedDesc}</p>
+                    
+                    <div class="flex flex-wrap gap-2 mb-4">
+                        ${material.tags.map(tag => `
+                            <span class="inline-block px-2 py-1 text-xs rounded-full bg-white/10">${tag}</span>
+                        `).join('')}
+                    </div>
+                    
+                    <div class="flex justify-between items-center text-sm text-white/60 mb-4">
+                        <span><i class="fas fa-file-alt mr-1"></i> ${material.pages} pages</span>
+                        <span><i class="fas fa-download mr-1"></i> ${material.downloads} downloads</span>
+                        <span><i class="fas fa-calendar-alt mr-1"></i> ${formatDate(material.date)}</span>
+                    </div>
+                    
+                    <button class="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg transition-colors download-btn glow" 
+                            data-id="${material.id}" ${downloadsToday >= MAX_ANONYMOUS_DOWNLOADS && !hasPremiumAccess ? 'disabled' : ''}>
+                        <i class="fas fa-download mr-2"></i> Download (${material.size})
+                    </button>
+                    
+                    ${isSaved ? 
+                        `<p class="text-xs text-blue-300 mt-2 text-center"><i class="fas fa-check-circle mr-1"></i> Saved for later</p>` : 
+                        ''}
+                    
+                    ${downloadsToday >= MAX_ANONYMOUS_DOWNLOADS && !hasPremiumAccess ? 
+                        `<p class="text-xs text-red-300 mt-2 text-center">Download limit reached. Enter access code for unlimited downloads.</p>` : ''}
+                `;
+                
+                materialsGrid.appendChild(card);
+            });
+            
+            // Add event listeners to download buttons
+            document.querySelectorAll('.download-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    const materialId = e.target.closest('.download-btn').dataset.id;
+                    const material = materialsData.find(m => m.id == materialId);
+                    if (material) {
+                        openDownloadModal(material);
+                    }
+                });
+            });
+        }
+
+        // Highlight search term in text
+        function highlightSearchTerm(text, term) {
+            if (!term) return text;
+            
+            const regex = new RegExp(term, 'gi');
+            return text.replace(regex, match => 
+                `<span class="search-highlight">${match}</span>`
+            );
+        }
+
+        // Get category color
+        function getCategoryColor(category) {
+            const colors = {
+                physical: 'bg-green-600/20 text-green-400',
+                human: 'bg-purple-600/20 text-purple-400',
+                gis: 'bg-blue-600/20 text-blue-400',
+                economic: 'bg-yellow-600/20 text-yellow-400',
+                environmental: 'bg-teal-600/20 text-teal-400',
+                regional: 'bg-red-600/20 text-red-400'
+            };
+            return colors[category] || 'bg-gray-600/20 text-gray-400';
+        }
+
+        // Get category name
+        function getCategoryName(category) {
+            const names = {
+                physical: 'Physical Geo',
+                human: 'Human Geo',
+                gis: 'GIS & RS',
+                economic: 'Economic Geo',
+                environmental: 'Environmental',
+                regional: 'Regional Geo'
+            };
+            return names[category] || category;
+        }
+
+        // Get file icon based on tags
+        function getFileIcon(tags) {
+            if (tags.includes('lecture')) return '<i class="fas fa-chalkboard-teacher"></i>';
+            if (tags.includes('research')) return '<i class="fas fa-microscope"></i>';
+            if (tags.includes('map')) return '<i class="fas fa-map-marked-alt"></i>';
+            return '<i class="fas fa-file-pdf"></i>';
+        }
+
+        // Format date
+        function formatDate(dateString) {
+            const options = { year: 'numeric', month: 'short', day: 'numeric' };
+            return new Date(dateString).toLocaleDateString(undefined, options);
+        }
+
+        // Open download modal
+        function openDownloadModal(material) {
+            currentMaterialInModal = material;
+            
+            // Check download limit for anonymous users
+            if (downloadsToday >= MAX_ANONYMOUS_DOWNLOADS && !hasPremiumAccess) {
+                // Show access code prompt instead
+                accessCodeModal.classList.remove('hidden');
+                accessCodeError.textContent = `You've reached your daily download limit (${MAX_ANONYMOUS_DOWNLOADS}). Enter an access code to continue.`;
+                accessCodeError.classList.remove('hidden');
+                return;
+            }
+            
+            modalTitle.textContent = `Download: ${material.title}`;
+            modalDescription.textContent = material.description;
+            modalFileName.textContent = material.file;
+            modalFileSize.textContent = material.size;
+            
+            // In a real implementation, this would point to your actual file URL
+            downloadBtn.href = `/material/${material.file}`;
+            downloadBtn.download = material.file;
+            
+            // Set up download tracking
+            downloadBtn.onclick = (e) => {
+                if (!hasPremiumAccess) {
+                    downloadsToday++;
+                    
+                    // Save to localStorage
+                    const today = new Date().toDateString();
+                    localStorage.setItem('downloadData', JSON.stringify({
+                        date: today,
+                        count: downloadsToday,
+                        premium: hasPremiumAccess
+                    }));
+                    
+                    updateDownloadLimitDisplay();
+                }
+                
+                // Simulate download (in a real app, this would be an actual download)
+                setTimeout(() => {
+                    downloadModal.classList.add('hidden');
+                    showDownloadToast(material.title);
+                    currentMaterialInModal = null;
+                }, 1000);
+            };
+            
+            // Check if already saved
+            const isSaved = savedMaterials.some(m => m.id === material.id);
+            if (isSaved) {
+                saveForLaterBtn.innerHTML = '<i class="fas fa-check-circle mr-2"></i> Already Saved';
+                saveForLaterBtn.classList.add('bg-green-600', 'hover:bg-green-700');
+                saveForLaterBtn.classList.remove('border', 'hover:bg-white/10');
+            } else {
+                saveForLaterBtn.innerHTML = '<i class="fas fa-bookmark mr-2"></i> Save for Later';
+                saveForLaterBtn.classList.remove('bg-green-600', 'hover:bg-green-700');
+                saveForLaterBtn.classList.add('border', 'hover:bg-white/10');
+            }
+            
+            downloadModal.classList.remove('hidden');
+        }
+        
+        // Update the download limit display
+        function updateDownloadLimitDisplay() {
+            if (hasPremiumAccess) {
+                downloadLimitContainer.innerHTML = `
+                    <div class="flex items-center">
+                        <i class="fas fa-unlock text-green-400 mr-3 text-xl floating"></i>
+                        <div>
+                            <h3 class="font-medium">Premium Access Active</h3>
+                            <p class="text-sm text-white/70">Download limits have been removed</p>
+                        </div>
+                    </div>
+                `;
+            } else {
+                const percentage = (downloadsToday / MAX_ANONYMOUS_DOWNLOADS) * 100;
+                downloadProgress.style.width = `${percentage}%`;
+                downloadCount.textContent = `${downloadsToday}/${MAX_ANONYMOUS_DOWNLOADS}`;
+                
+                if (downloadsToday >= MAX_ANONYMOUS_DOWNLOADS) {
+                    downloadProgress.classList.add('bg-red-500');
+                    downloadProgress.classList.remove('bg-blue-500');
+                } else {
+                    downloadProgress.classList.add('bg-blue-500');
+                    downloadProgress.classList.remove('bg-red-500');
+                }
+            }
+        }
+        
+        // Show toast notification
+        function showToast(message, color = 'blue-500') {
+            const toast = document.createElement('div');
+            toast.className = `fixed bottom-4 right-4 bg-${color} text-white px-6 py-3 rounded-lg shadow-lg flex items-center animate-fadeIn`;
+            toast.innerHTML = `
+                <i class="fas fa-check-circle mr-3 text-xl"></i>
+                <div>
+                    <p class="font-medium">${message}</p>
+                </div>
+            `;
+            
+            document.body.appendChild(toast);
+            
+            setTimeout(() => {
+                toast.classList.add('opacity-0', 'transition-opacity', 'duration-300');
+                setTimeout(() => {
+                    toast.remove();
+                }, 300);
+            }, 3000);
+        }
+        
+        // Show download success toast
+        function showDownloadToast(filename) {
+            showToast(`Download started: ${filename}`, 'green-500');
+        }
+        
+        // Create floating particles background
+        function createParticles() {
+            const particleCount = 30;
+            
+            for (let i = 0; i < particleCount; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'particle';
+                
+                // Random size between 1px and 5px
+                const size = Math.random() * 4 + 1;
+                particle.style.width = `${size}px`;
+                particle.style.height = `${size}px`;
+                
+                // Random position
+                particle.style.left = `${Math.random() * 100}%`;
+                particle.style.top = `${Math.random() * 100}%`;
+                
+                // Random opacity
+                particle.style.opacity = Math.random() * 0.5 + 0.1;
+                
+                // Random animation duration and delay
+                const duration = Math.random() * 20 + 10;
+                const delay = Math.random() * 5;
+                particle.style.animation = `float ${duration}s ease-in-out ${delay}s infinite`;
+                
+                particlesContainer.appendChild(particle);
+            }
+        }
+        
+        // Create confetti celebration
+        function createConfetti() {
+            const colors = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6'];
+            
+            for (let i = 0; i < 100; i++) {
+                const confetti = document.createElement('div');
+                confetti.className = 'confetti';
+                
+                // Random properties
+                const color = colors[Math.floor(Math.random() * colors.length)];
+                const size = Math.random() * 8 + 4;
+                const left = Math.random() * 100;
+                const animationDuration = Math.random() * 3 + 2;
+                
+                confetti.style.backgroundColor = color;
+                confetti.style.width = `${size}px`;
+                confetti.style.height = `${size}px`;
+                confetti.style.left = `${left}%`;
+                confetti.style.animationDuration = `${animationDuration}s`;
+                
+                document.body.appendChild(confetti);
+                
+                // Remove after animation completes
+                setTimeout(() => {
+                    confetti.remove();
+                }, animationDuration * 1000);
+            }
+        }
+    </script>
+</body>
+</html>
