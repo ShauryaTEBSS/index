@@ -1130,5 +1130,13 @@
             }
         }
     </script>
+    <script>
+        if (sessionStorage.getItem('validated') === 'false') {
+            document.getElementById('content').innerHTML = `
+        <h1>🚫 You are not validated!</h1>
+        <p>Please access this page from the main button.</p>
+      `;
+    }
+    </script>
 </body>
 </html>
