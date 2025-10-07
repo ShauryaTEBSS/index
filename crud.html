@@ -1,0 +1,1132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title> Firebase Crud web App- Dynamic</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #FFCA28 0%, #FFA000 100%);
+            min-height: 100vh;
+            padding: 20px;
+            padding-bottom: 80px;
+        }
+
+        .container {
+            max-width: 100%;
+            margin: 0 auto;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: #FFA000;
+            color: white;
+            padding: 20px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .header h1 {
+            font-size: 1.8em;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            font-size: 0.95em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-add {
+            background: white;
+            color: #FFA000;
+            margin-right: 10px;
+        }
+
+        .btn-add:hover {
+            background: #FFF8E1;
+        }
+
+        .btn-print {
+            background: white;
+            color: #FFA000;
+            border: 2px solid transparent;
+        }
+
+        .btn-print:hover {
+            background: #FFF8E1;
+            border-color: #FFA000;
+        }
+
+        .btn-sm.btn-print {
+            background: #2196F3;
+            color: white;
+            border: none;
+        }
+
+        .btn-sm.btn-print:hover {
+            background: #1976D2;
+        }
+
+        .btn-primary {
+            background: #FFA000;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #FF8F00;
+        }
+
+        .btn-secondary {
+            background: #E0E0E0;
+            color: #333;
+        }
+
+        .btn-secondary:hover {
+            background: #D0D0D0;
+        }
+
+        .btn-sm {
+            padding: 6px 10px;
+            font-size: 0.85em;
+            margin: 0 2px;
+        }
+
+        .btn-sm i {
+            font-size: 0.9em;
+        }
+
+        .btn-edit {
+            background: #4CAF50;
+            color: white;
+        }
+
+        .btn-edit:hover {
+            background: #45a049;
+        }
+
+        .btn-danger {
+            background: #F57C00;
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #E65100;
+        }
+
+        .content {
+            padding: 30px;
+        }
+
+        .table-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .table-header h2 {
+            color: #F57C00;
+            font-size: 1.4em;
+        }
+
+        .search-box {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .search-box input {
+            padding: 8px 15px;
+            border: 2px solid #FFE082;
+            border-radius: 4px;
+            font-size: 0.95em;
+            min-width: 200px;
+        }
+
+        .search-box input:focus {
+            outline: none;
+            border-color: #FFA000;
+        }
+
+        /* Responsive Table */
+        .table-container {
+            overflow-x: auto;
+            border: 1px solid #FFE082;
+            border-radius: 6px;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        table {
+            width: 100%;
+            min-width: 800px;
+            border-collapse: collapse;
+            font-size: 0.95em;
+        }
+
+        thead {
+            background: #FFF8E1;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        thead th {
+            padding: 12px;
+            text-align: left;
+            color: #E65100;
+            font-weight: 600;
+            border-bottom: 2px solid #FFE082;
+            white-space: nowrap;
+        }
+
+        tbody tr {
+            border-bottom: 1px solid #FFE082;
+            transition: background 0.2s;
+        }
+
+        tbody tr:hover {
+            background: #FFFEF5;
+        }
+
+        tbody td {
+            padding: 12px;
+            color: #333;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #999;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #FFA000;
+            font-size: 1.1em;
+        }
+
+        /* Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            animation: fadeIn 0.3s;
+            overflow-y: auto;
+        }
+
+        .modal.active {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 8px;
+            width: 90%;
+            max-width: 900px;
+            max-height: 90vh;
+            overflow-y: auto;
+            animation: slideDown 0.3s;
+        }
+
+        .modal-header {
+            background: #FFA000;
+            color: white;
+            padding: 20px;
+            border-radius: 8px 8px 0 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-header h2 {
+            font-size: 1.3em;
+        }
+
+        .close-btn {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 1.5em;
+            cursor: pointer;
+            padding: 0;
+            width: 30px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .close-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 4px;
+        }
+
+        .modal-body {
+            padding: 25px;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+        }
+
+        .form-group {
+            margin-bottom: 0;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 6px;
+            color: #E65100;
+            font-weight: 600;
+            font-size: 0.95em;
+        }
+
+        .form-group input,
+        .form-group textarea,
+        .form-group select {
+            width: 100%;
+            padding: 10px 12px;
+            border: 2px solid #FFE082;
+            border-radius: 4px;
+            font-size: 0.95em;
+            font-family: inherit;
+            transition: border-color 0.3s;
+        }
+
+        .form-group input:focus,
+        .form-group textarea:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: #FFA000;
+        }
+
+        .form-group textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+
+        .modal-footer {
+            padding: 0 25px 25px;
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+            flex-wrap: wrap;
+        }
+
+        .alert {
+            padding: 12px 20px;
+            margin-bottom: 20px;
+            border-radius: 4px;
+            display: none;
+            animation: slideDown 0.3s;
+        }
+
+        .alert.active {
+            display: block;
+        }
+
+        .alert-success {
+            background: #C8E6C9;
+            color: #2E7D32;
+            border-left: 4px solid #4CAF50;
+        }
+
+        .alert-error {
+            background: #FFCCBC;
+            color: #BF360C;
+            border-left: 4px solid #F57C00;
+        }
+
+        .delete-modal-content {
+            text-align: center;
+        }
+
+        .delete-modal-content p {
+            margin: 20px 0;
+            color: #666;
+            font-size: 1.05em;
+        }
+
+        .delete-modal-content .item-info {
+            background: #FFF8E1;
+            padding: 15px;
+            border-radius: 4px;
+            margin: 20px 0;
+            border-left: 4px solid #FFA000;
+        }
+
+        .delete-modal-content .item-info strong {
+            color: #E65100;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .no-wrap {
+            white-space: nowrap;
+        }
+
+        /* Print Styles */
+        @page {
+            size: 80mm auto;
+            margin: 0;
+        }
+
+        @media print {
+            * {
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+
+            body {
+                background: white;
+                margin: 0;
+                padding: 0;
+            }
+
+            .container,
+            .header,
+            .content,
+            .modal {
+                display: none !important;
+            }
+
+            #printArea {
+                display: block !important;
+                position: relative;
+                width: 80mm;
+                margin: 0;
+                padding: 0;
+            }
+        }
+
+        .print-slip {
+            width: 80mm;
+            font-family: 'Courier New', monospace;
+            padding: 5mm;
+            background: white;
+            color: #000;
+        }
+
+        @media print {
+            .print-slip {
+                padding: 5mm;
+                margin: 0;
+                width: 100%;
+            }
+
+            .student-card {
+                page-break-inside: avoid;
+            }
+        }
+
+        .print-slip-header {
+            text-align: center;
+            border-bottom: 2px dashed #333;
+            padding-bottom: 8px;
+            margin-bottom: 12px;
+        }
+
+        .print-slip-header h2 {
+            font-size: 16px;
+            margin-bottom: 4px;
+        }
+
+        .print-slip-header p {
+            font-size: 10px;
+            color: #666;
+        }
+
+        .student-card {
+            margin-bottom: 15px;
+            padding-bottom: 15px;
+            border-bottom: 1px dashed #999;
+        }
+
+        .student-card:last-child {
+            border-bottom: 2px dashed #333;
+        }
+
+        .student-card .card-number {
+            font-size: 11px;
+            font-weight: bold;
+            margin-bottom: 8px;
+            color: #FFA000;
+        }
+
+        .student-card .card-row {
+            display: flex;
+            margin-bottom: 4px;
+            font-size: 10px;
+        }
+
+        .student-card .card-label {
+            font-weight: bold;
+            width: 70px;
+            flex-shrink: 0;
+        }
+
+        .student-card .card-value {
+            flex: 1;
+            word-wrap: break-word;
+            word-break: break-word;
+            overflow-wrap: break-word;
+        }
+
+        .print-slip-footer {
+            text-align: center;
+            margin-top: 12px;
+            padding-top: 8px;
+            border-top: 2px dashed #333;
+            font-size: 9px;
+            color: #666;
+        }
+
+        .header-buttons {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .footer {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            background: #FFA000;
+            color: white;
+            padding: 15px 20px;
+            text-align: center;
+            box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
+            z-index: 999;
+        }
+
+        .footer-content {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+
+        .footer-brand {
+            font-weight: bold;
+            font-size: 1em;
+        }
+
+        .footer-divider {
+            color: #FFE082;
+        }
+
+        .footer-tech {
+            font-size: 0.9em;
+            opacity: 0.95;
+        }
+
+        .footer-tech i {
+            margin-right: 5px;
+        }
+
+        /* Mobile Responsive */
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 1.4em;
+            }
+
+            .content {
+                padding: 15px;
+            }
+
+            .modal-body {
+                grid-template-columns: 1fr;
+            }
+
+            .table-header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .search-box {
+                width: 100%;
+            }
+
+            .search-box input {
+                flex: 1;
+                min-width: 150px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1><i class="fas fa-graduation-cap"></i> Firebase Crud web App (Dynamic)</h1>
+            <div class="header-buttons">
+                <button class="btn btn-add" onclick="openAddModal()"><i class="fas fa-user-plus"></i> Add New Student</button>
+                <button class="btn btn-print" onclick="printAllCards()"><i class="fas fa-print"></i> Print All Cards</button>
+            </div>
+        </div>
+
+        <div class="content">
+            <div id="alertBox" class="alert"></div>
+
+            <div class="table-header">
+                <h2>All Students</h2>
+                <div class="search-box">
+                    <input type="text" id="searchInput" placeholder="Search students...">
+                </div>
+            </div>
+
+            <div class="table-container">
+                <table id="dataTable">
+                    <thead id="tableHead"></thead>
+                    <tbody id="tableBody">
+                        <tr>
+                            <td colspan="20" class="loading">Loading items...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <footer class="footer">
+        <div class="footer-content">
+            <div class="footer-brand">
+                <i class="fas fa-code"></i> MRI SCRIPTS | Google Apps Script Expert
+            </div>
+            <span class="footer-divider">|</span>
+            <div class="footer-tech">
+                <i class="fab fa-google"></i> Firebase Realtime Database
+            </div>
+        </div>
+    </footer>
+
+    <div id="printArea" style="display: none;">
+        <div class="print-slip" id="printContent"></div>
+    </div>
+
+    <div id="formModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="modalTitle">Add New Student</h2>
+                <button class="close-btn" onclick="closeFormModal()">&times;</button>
+            </div>
+            <form id="itemForm" onsubmit="handleSubmit(event)">
+                <input type="hidden" id="editId">
+                <div class="modal-body" id="formFields"></div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" onclick="closeFormModal()">Cancel</button>
+                    <button type="submit" class="btn btn-primary" id="submitBtn">Save</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div id="deleteModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Confirm Delete</h2>
+                <button class="close-btn" onclick="closeDeleteModal()">&times;</button>
+            </div>
+            <div class="modal-body delete-modal-content">
+                <p>Are you sure you want to delete this student?</p>
+                <div class="item-info" id="deleteItemInfo"></div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" onclick="closeDeleteModal()">Cancel</button>
+                <button type="button" class="btn btn-danger" id="confirmDeleteBtn">Delete</button>
+            </div>
+        </div>
+    </div>
+
+
+
+
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
+        import { getDatabase, ref, push, onValue, remove, update } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js';
+
+
+
+        const FIELDS = [
+            { id: 'studentName', label: 'Student Name', type: 'text', icon: 'fa-user', required: true, showInTable: true, showInPrint: true, searchable: true, placeholder: 'Enter student name' },
+            { id: 'fatherName', label: 'Father Name', type: 'text', icon: 'fa-user-tie', required: true, showInTable: true, showInPrint: true, searchable: true, placeholder: 'Enter father name' },
+            { id: 'emailId', label: 'Email ID', type: 'email', icon: 'fa-envelope', required: true, showInTable: true, showInPrint: true, searchable: true, placeholder: 'Enter email address' },
+            { id: 'studentClass', label: 'Class', type: 'text', icon: 'fa-chalkboard', required: true, showInTable: true, showInPrint: true, searchable: true, placeholder: 'Enter class (e.g., 10th Grade)' },
+            { id: 'fees', label: 'Fees', type: 'number', icon: 'fa-dollar-sign', required: true, showInTable: true, showInPrint: true, searchable: false, placeholder: 'Enter fees amount', step: '0.01' },
+            { id: 'fees', label: 'Fees', type: 'number', icon: 'fa-dollar-sign', required: true, showInTable: true, showInPrint: true, searchable: false, placeholder: 'Enter fees amount', step: '0.01' },
+            { id: 'status', label: 'Status', type: 'select', icon: 'fa-info-circle', required: true, showInTable: true, showInPrint: true, searchable: true, options: ['Active', 'Inactive', 'Pending', 'Ramiz' ,'Graduated'] },
+
+        ];
+
+    const firebaseConfig = {
+  apiKey: "",
+  authDomain: "",
+  databaseURL: "",
+  projectId: "",
+  storageBucket: "",
+  messagingSenderId: "",
+  appId: "",
+  measurementId: ""
+};
+
+        const app = initializeApp(firebaseConfig);
+        const database = getDatabase(app);
+        const itemsRef = ref(database, 'items');
+
+        let allItems = [];
+        let deleteItemId = null;
+
+        const formModal = document.getElementById('formModal');
+        const deleteModal = document.getElementById('deleteModal');
+        const itemForm = document.getElementById('itemForm');
+        const tableBody = document.getElementById('tableBody');
+        const tableHead = document.getElementById('tableHead');
+        const searchInput = document.getElementById('searchInput');
+        const alertBox = document.getElementById('alertBox');
+
+        // Generate table headers dynamically
+        function generateTableHeader() {
+            const visibleFields = FIELDS.filter(f => f.showInTable);
+            const headers = ['#', ...visibleFields.map(f => f.label), 'Created', 'Actions'];
+
+            tableHead.innerHTML = `
+                <tr>
+                    ${headers.map(h => `<th>${h}</th>`).join('')}
+                </tr>
+            `;
+        }
+
+        // Generate form fields dynamically
+        function generateFormFields() {
+            const formFields = document.getElementById('formFields');
+            formFields.innerHTML = FIELDS.map(field => {
+                const icon = field.icon ? `<i class="fas ${field.icon}"></i> ` : '';
+                const required = field.required ? 'required' : '';
+                const placeholder = field.placeholder ? `placeholder="${field.placeholder}"` : '';
+                const step = field.step ? `step="${field.step}"` : '';
+
+                if (field.type === 'select') {
+                    const options = field.options.map(opt => `<option value="${opt}">${opt}</option>`).join('');
+                    return `
+                        <div class="form-group">
+                            <label for="${field.id}">${icon}${field.label}</label>
+                            <select id="${field.id}" ${required}>
+                                <option value="">Select ${field.label.toLowerCase()}</option>
+                                ${options}
+                            </select>
+                        </div>
+                    `;
+                } else if (field.type === 'textarea') {
+                    return `
+                        <div class="form-group">
+                            <label for="${field.id}">${icon}${field.label}</label>
+                            <textarea id="${field.id}" ${required} ${placeholder}></textarea>
+                        </div>
+                    `;
+                } else {
+                    return `
+                        <div class="form-group">
+                            <label for="${field.id}">${icon}${field.label}</label>
+                            <input type="${field.type}" id="${field.id}" ${required} ${placeholder} ${step}>
+                        </div>
+                    `;
+                }
+            }).join('');
+        }
+
+        // Get field value for submission
+        function getFieldValue(field) {
+            const element = document.getElementById(field.id);
+            if (field.type === 'number') {
+                return parseFloat(element.value);
+            }
+            return element.value.trim();
+        }
+
+        // Set field value for editing
+        function setFieldValue(field, value) {
+            const element = document.getElementById(field.id);
+            element.value = value || '';
+        }
+
+        // Display field value in table
+        function displayFieldValue(field, item) {
+            const value = item[field.id];
+            if (value === undefined || value === null || value === '') return 'N/A';
+
+            if (field.type === 'number') {
+                return field.id === 'fees' ? `$${parseFloat(value).toFixed(2)}` : value;
+            } else if (field.type === 'date') {
+                return new Date(value).toLocaleDateString();
+            } else if (field.id === 'status') {
+                let color = '#4CAF50';
+                if (value === 'Inactive') color = '#F44336';
+                else if (value === 'Pending') color = '#FF9800';
+                else if (value === 'Graduated') color = '#2196F3';
+                return `<span style="color: ${color}; font-weight: bold;">●</span> ${escapeHtml(value)}`;
+            }
+            return escapeHtml(value);
+        }
+
+        function showAlert(message, type) {
+            alertBox.textContent = message;
+            alertBox.className = `alert alert-${type} active`;
+            setTimeout(() => {
+                alertBox.className = 'alert';
+            }, 3000);
+        }
+
+        function applyFilters() {
+            const searchTerm = searchInput.value.toLowerCase();
+            let filtered = allItems;
+
+            if (searchTerm !== '') {
+                const searchableFields = FIELDS.filter(f => f.searchable);
+                filtered = filtered.filter(item =>
+                    searchableFields.some(field =>
+                        item[field.id] && item[field.id].toString().toLowerCase().includes(searchTerm)
+                    )
+                );
+            }
+
+            displayItems(filtered);
+        }
+
+        window.openAddModal = function() {
+            document.getElementById('modalTitle').textContent = 'Add New Student';
+            document.getElementById('submitBtn').textContent = 'Save';
+            document.getElementById('editId').value = '';
+            itemForm.reset();
+            formModal.classList.add('active');
+        };
+
+        window.closeFormModal = function() {
+            formModal.classList.remove('active');
+            itemForm.reset();
+        };
+
+        window.openEditModal = function(id) {
+            const item = allItems.find(i => i.id === id);
+            if (!item) return;
+
+            document.getElementById('modalTitle').textContent = 'Edit Student';
+            document.getElementById('submitBtn').textContent = 'Update';
+            document.getElementById('editId').value = id;
+
+            FIELDS.forEach(field => setFieldValue(field, item[field.id]));
+
+            formModal.classList.add('active');
+        };
+
+        window.openDeleteModal = function(id) {
+            const item = allItems.find(i => i.id === id);
+            if (!item) return;
+
+            deleteItemId = id;
+            const displayFields = FIELDS.filter(f => f.showInTable).slice(0, 3);
+            document.getElementById('deleteItemInfo').innerHTML = displayFields.map(field =>
+                `<strong>${field.label}:</strong> ${escapeHtml(item[field.id] || 'N/A')}`
+            ).join('<br>');
+            deleteModal.classList.add('active');
+        };
+
+        window.closeDeleteModal = function() {
+            deleteModal.classList.remove('active');
+            deleteItemId = null;
+        };
+
+        window.handleSubmit = function(e) {
+            e.preventDefault();
+
+            const item = {};
+            FIELDS.forEach(field => {
+                item[field.id] = getFieldValue(field);
+            });
+            item.createdAt = new Date().toISOString();
+
+            const id = document.getElementById('editId').value;
+
+            if (id) {
+                const itemRef = ref(database, `items/${id}`);
+                update(itemRef, item)
+                    .then(() => {
+                        showAlert('Student updated successfully!', 'success');
+                        closeFormModal();
+                    })
+                    .catch((error) => {
+                        showAlert('Error: ' + error.message, 'error');
+                    });
+            } else {
+                push(itemsRef, item)
+                    .then(() => {
+                        showAlert('Student added successfully!', 'success');
+                        closeFormModal();
+                    })
+                    .catch((error) => {
+                        showAlert('Error: ' + error.message, 'error');
+                    });
+            }
+        };
+
+        document.getElementById('confirmDeleteBtn').addEventListener('click', () => {
+            if (!deleteItemId) return;
+
+            const itemRef = ref(database, `items/${deleteItemId}`);
+            remove(itemRef)
+                .then(() => {
+                    showAlert('Student deleted successfully!', 'success');
+                    closeDeleteModal();
+                })
+                .catch((error) => {
+                    showAlert('Error: ' + error.message, 'error');
+                });
+        });
+
+        onValue(itemsRef, (snapshot) => {
+            allItems = [];
+
+            const visibleFieldsCount = FIELDS.filter(f => f.showInTable).length + 3;
+
+            if (!snapshot.exists()) {
+                tableBody.innerHTML = `
+                    <tr>
+                        <td colspan="${visibleFieldsCount}" class="empty-state">
+                            <h3>No students yet</h3>
+                            <p>Click "Add New Student" to get started</p>
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+
+            snapshot.forEach((childSnapshot) => {
+                allItems.push({
+                    id: childSnapshot.key,
+                    ...childSnapshot.val()
+                });
+            });
+
+            allItems.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+            displayItems(allItems);
+        });
+
+        function displayItems(items) {
+            const visibleFields = FIELDS.filter(f => f.showInTable);
+            const visibleFieldsCount = visibleFields.length + 3;
+
+            if (items.length === 0) {
+                tableBody.innerHTML = `
+                    <tr>
+                        <td colspan="${visibleFieldsCount}" class="empty-state">
+                            <h3>No students found</h3>
+                            <p>Try adjusting your search</p>
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+
+            tableBody.innerHTML = items.map((item, index) => {
+                const date = new Date(item.createdAt).toLocaleDateString('en-US', {
+                    year: 'numeric',
+                    month: 'short',
+                    day: 'numeric'
+                });
+
+                const cells = [
+                    index + 1,
+                    ...visibleFields.map(field => displayFieldValue(field, item)),
+                    date,
+                    `<div class="no-wrap">
+                        <button class="btn btn-sm btn-edit" onclick="openEditModal('${item.id}')"><i class="fas fa-edit"></i></button>
+                        <button class="btn btn-sm btn-danger" onclick="openDeleteModal('${item.id}')"><i class="fas fa-trash"></i></button>
+                        <button class="btn btn-sm btn-print" onclick="printSingleCard('${item.id}')"><i class="fas fa-print"></i></button>
+                    </div>`
+                ];
+
+                return `<tr>${cells.map(cell => `<td>${cell}</td>`).join('')}</tr>`;
+            }).join('');
+        }
+
+        searchInput.addEventListener('input', applyFilters);
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        window.addEventListener('click', (e) => {
+            if (e.target === formModal) closeFormModal();
+            if (e.target === deleteModal) closeDeleteModal();
+        });
+
+        window.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                closeFormModal();
+                closeDeleteModal();
+            }
+        });
+
+        window.printAllCards = function() {
+            if (allItems.length === 0) {
+                alert('No students to print!');
+                return;
+            }
+
+            const printContent = document.getElementById('printContent');
+            const now = new Date().toLocaleString('en-US', {
+                year: 'numeric',
+                month: 'short',
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+
+            const printFields = FIELDS.filter(f => f.showInPrint);
+
+            let cardsHtml = `
+                <div class="print-slip-header">
+                    <h2>STUDENT CARDS</h2>
+                    <p>Printed: ${now}</p>
+                    <p>Total Cards: ${allItems.length}</p>
+                </div>
+            `;
+
+            allItems.forEach((item, index) => {
+                const date = new Date(item.createdAt).toLocaleDateString('en-US', {
+                    year: 'numeric',
+                    month: 'short',
+                    day: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit'
+                });
+
+                cardsHtml += `
+                    <div class="student-card">
+                        <div class="card-number">CARD #${index + 1}</div>
+                        ${printFields.map(field => `
+                            <div class="card-row">
+                                <div class="card-label">${field.label}:</div>
+                                <div class="card-value">${escapeHtml(item[field.id] || 'N/A')}</div>
+                            </div>
+                        `).join('')}
+                        <div class="card-row">
+                            <div class="card-label">Date:</div>
+                            <div class="card-value">${date}</div>
+                        </div>
+                    </div>
+                `;
+            });
+
+            cardsHtml += `
+                <div class="print-slip-footer">
+                    <p>Firebase CRUD App - Student Cards</p>
+                    <p>End of Report</p>
+                </div>
+            `;
+
+            printContent.innerHTML = cardsHtml;
+            window.print();
+        };
+
+        window.printSingleCard = function(id) {
+            const item = allItems.find(i => i.id === id);
+            if (!item) return;
+
+            const printContent = document.getElementById('printContent');
+            const now = new Date().toLocaleString('en-US', {
+                year: 'numeric',
+                month: 'short',
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+
+            const date = new Date(item.createdAt).toLocaleDateString('en-US', {
+                year: 'numeric',
+                month: 'short',
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+
+            const printFields = FIELDS.filter(f => f.showInPrint);
+
+            const cardHtml = `
+                <div class="print-slip-header">
+                    <h2>STUDENT CARD</h2>
+                    <p>Printed: ${now}</p>
+                </div>
+                <div class="student-card">
+                    ${printFields.map(field => `
+                        <div class="card-row">
+                            <div class="card-label">${field.label}:</div>
+                            <div class="card-value">${escapeHtml(item[field.id] || 'N/A')}</div>
+                        </div>
+                    `).join('')}
+                    <div class="card-row">
+                        <div class="card-label">Date:</div>
+                        <div class="card-value">${date}</div>
+                    </div>
+                </div>
+                <div class="print-slip-footer">
+                    <p>Firebase CRUD App - Student Card</p>
+                    <p>End of Card</p>
+                </div>
+            `;
+
+            printContent.innerHTML = cardHtml;
+            window.print();
+        };
+
+        // Initialize
+        generateTableHeader();
+        generateFormFields();
+    </script>
+</body>
+</html>
