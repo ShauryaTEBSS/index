@@ -1,0 +1,572 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Participant Management System</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* --- General & Body Styles --- */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #FFCA28 0%, #FFA000 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            padding-bottom: 80px;
+        }
+
+        /* --- Login Container --- */
+        #login-container {
+            width: 100%;
+            max-width: 400px;
+            padding: 40px;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            animation: fadeIn 0.5s;
+        }
+
+        #login-container h2 {
+            color: #E65100;
+            margin-bottom: 10px;
+            font-size: 1.8em;
+        }
+
+        #login-container p {
+            color: #666;
+            margin-bottom: 25px;
+        }
+        
+        #login-container .form-group input {
+            text-align: left;
+        }
+
+        #loginError {
+            color: #BF360C;
+            background: #FFCCBC;
+            border: 1px solid #F57C00;
+            padding: 10px;
+            border-radius: 4px;
+            margin-top: 15px;
+            display: none; /* Hidden by default */
+        }
+        
+        /* --- Main App Container --- */
+        #app-container {
+            display: none; /* Hidden until user logs in */
+            width: 100%;
+        }
+
+        .container {
+            max-width: 100%;
+            margin: 0 auto;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: #FFA000;
+            color: white;
+            padding: 20px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .header h1 {
+            font-size: 1.8em;
+        }
+
+        /* --- Buttons --- */
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            font-size: 0.95em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .btn-add { background: white; color: #FFA000; }
+        .btn-add:hover { background: #FFF8E1; }
+        .btn-print { background: white; color: #FFA000; }
+        .btn-print:hover { background: #FFF8E1; }
+        .btn-primary { background: #FFA000; color: white; }
+        .btn-primary:hover { background: #FF8F00; }
+        .btn-secondary { background: #E0E0E0; color: #333; }
+        .btn-secondary:hover { background: #D0D0D0; }
+        .btn-sm { padding: 6px 10px; font-size: 0.85em; margin: 0 2px; }
+        .btn-sm i { font-size: 0.9em; }
+        .btn-edit { background: #4CAF50; color: white; }
+        .btn-edit:hover { background: #45a049; }
+        .btn-danger { background: #F57C00; color: white; }
+        .btn-danger:hover { background: #E65100; }
+        .btn-sm.btn-print { background: #2196F3; color: white; border: none; }
+        .btn-sm.btn-print:hover { background: #1976D2; }
+
+        .content { padding: 30px; }
+        .table-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 15px; }
+        .table-header h2 { color: #F57C00; font-size: 1.4em; }
+        .search-box { display: flex; gap: 10px; align-items: center; }
+        .search-box input { padding: 8px 15px; border: 2px solid #FFE082; border-radius: 4px; font-size: 0.95em; min-width: 200px; }
+        .search-box input:focus { outline: none; border-color: #FFA000; }
+
+        /* --- Responsive Table --- */
+        .table-container { overflow-x: auto; border: 1px solid #FFE082; border-radius: 6px; }
+        table { width: 100%; min-width: 800px; border-collapse: collapse; font-size: 0.95em; }
+        thead { background: #FFF8E1; position: sticky; top: 0; z-index: 10; }
+        thead th { padding: 12px; text-align: left; color: #E65100; font-weight: 600; border-bottom: 2px solid #FFE082; }
+        tbody tr { border-bottom: 1px solid #FFE082; }
+        tbody tr:hover { background: #FFFEF5; }
+        tbody td { padding: 12px; color: #333; }
+        .empty-state, .loading { text-align: center; padding: 60px 20px; color: #999; }
+
+        /* --- Modal Styles --- */
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.5); z-index: 1000; animation: fadeIn 0.3s; overflow-y: auto; }
+        .modal.active { display: flex; justify-content: center; align-items: center; padding: 20px; }
+        .modal-content { background: white; border-radius: 8px; width: 90%; max-width: 600px; max-height: 90vh; overflow: hidden; display: flex; flex-direction: column; animation: slideDown 0.3s; }
+        .modal-header { background: #FFA000; color: white; padding: 20px; border-radius: 8px 8px 0 0; display: flex; justify-content: space-between; align-items: center; }
+        .modal-header h2 { font-size: 1.3em; }
+        .close-btn { background: none; border: none; color: white; font-size: 1.5em; cursor: pointer; }
+        .modal-body { padding: 25px; overflow-y: auto; }
+
+        /* --- Multi-Step Form --- */
+        .step-indicator-container { display: flex; justify-content: space-around; padding: 15px 25px; background: #FFF8E1; }
+        .step-indicator { display: flex; flex-direction: column; align-items: center; color: #FFCA28; flex: 1; position: relative;}
+        .step-indicator:not(:last-child)::after { content: ''; position: absolute; top: 12px; left: 50%; width: 100%; height: 2px; background: #FFCA28; z-index: 1; }
+        .step-circle { width: 25px; height: 25px; border-radius: 50%; background: #FFCA28; color: white; display: flex; align-items: center; justify-content: center; font-weight: bold; z-index: 2; transition: background 0.3s; }
+        .step-label { font-size: 0.8em; margin-top: 5px; }
+        .step-indicator.active .step-circle { background: #FFA000; }
+        .step-indicator.active .step-label { color: #FFA000; font-weight: bold;}
+
+        .form-step { display: none; }
+        .form-step.active { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; animation: fadeIn 0.4s; }
+
+        .form-group { margin-bottom: 0; }
+        .form-group label { display: block; margin-bottom: 6px; color: #E65100; font-weight: 600; font-size: 0.95em; }
+        .form-group input, .form-group select { width: 100%; padding: 10px 12px; border: 2px solid #FFE082; border-radius: 4px; font-size: 0.95em; }
+        .form-group input:focus, .form-group select:focus { outline: none; border-color: #FFA000; }
+
+        .modal-footer { padding: 20px 25px; display: flex; gap: 10px; justify-content: space-between; border-top: 1px solid #eee; }
+        .modal-footer .right-buttons { display: flex; gap: 10px;}
+
+        /* --- Other components --- */
+        .alert { padding: 12px 20px; margin-bottom: 20px; border-radius: 4px; display: none; animation: slideDown 0.3s; }
+        .alert.active { display: block; }
+        .alert-success { background: #C8E6C9; color: #2E7D32; border-left: 4px solid #4CAF50; }
+        .alert-error { background: #FFCCBC; color: #BF360C; border-left: 4px solid #F57C00; }
+
+        .delete-modal-content { text-align: center; }
+        .delete-modal-content p { margin: 20px 0; color: #666; font-size: 1.05em; }
+        .delete-modal-content .item-info { background: #FFF8E1; padding: 15px; border-radius: 4px; margin: 20px 0; border-left: 4px solid #FFA000; }
+        
+        .header-buttons { display: flex; gap: 10px; flex-wrap: wrap; }
+        
+        .footer { position: fixed; bottom: 0; left: 0; width: 100%; background: #FFA000; color: white; padding: 15px 20px; text-align: center; box-shadow: 0 -2px 10px rgba(0,0,0,0.1); z-index: 999; }
+
+        .no-wrap { white-space: nowrap; }
+
+        /* --- Animations --- */
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes slideDown { from { opacity: 0; transform: translateY(-20px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* --- Print & Responsive --- */
+        /* Print styles are omitted for brevity but are in your original file if needed */
+        @media (max-width: 768px) {
+            .header h1 { font-size: 1.4em; }
+            .content { padding: 15px; }
+            .form-step { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <div id="login-container">
+        <h2><i class="fas fa-lock"></i> Welcome</h2>
+        <p>Please log in to manage participants.</p>
+        <form id="loginForm">
+            <div class="form-group">
+                <input type="email" id="loginEmail" placeholder="Email" required>
+            </div>
+            <br>
+            <div class="form-group">
+                <input type="password" id="loginPassword" placeholder="Password" required>
+            </div>
+            <div id="loginError"></div>
+            <br>
+            <button type="submit" class="btn btn-primary" style="width: 100%;">Login</button>
+        </form>
+    </div>
+
+    <div id="app-container">
+        <div class="container">
+            <div class="header">
+                <h1><i class="fas fa-users"></i> Participant Management</h1>
+                <div class="header-buttons">
+                    <button class="btn btn-add" onclick="openAddModal()"><i class="fas fa-user-plus"></i> Add Participant</button>
+                    <button class="btn btn-danger" id="logoutBtn"><i class="fas fa-sign-out-alt"></i> Logout</button>
+                </div>
+            </div>
+
+            <div class="content">
+                <div id="alertBox" class="alert"></div>
+                <div class="table-header">
+                    <h2>All Participants</h2>
+                    <div class="search-box">
+                        <input type="text" id="searchInput" placeholder="Search by name, event...">
+                    </div>
+                </div>
+                <div class="table-container">
+                    <table id="dataTable">
+                        <thead id="tableHead"></thead>
+                        <tbody id="tableBody">
+                            <tr><td colspan="20" class="loading">Loading participants...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <footer class="footer">
+            <div>Participant Management System | Powered by Firebase</div>
+        </footer>
+    </div>
+    
+    <div id="formModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="modalTitle">Add New Participant</h2>
+                <button class="close-btn" onclick="closeFormModal()">&times;</button>
+            </div>
+            <div id="step-indicators" class="step-indicator-container"></div>
+            <form id="itemForm">
+                <input type="hidden" id="editId">
+                <div class="modal-body" id="formFields"></div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" id="prevBtn" onclick="prevStep()">Previous</button>
+                    <div class="right-buttons">
+                        <button type="button" class="btn btn-secondary" onclick="closeFormModal()">Cancel</button>
+                        <button type="button" class="btn btn-primary" id="nextBtn" onclick="nextStep()">Next</button>
+                        <button type="submit" class="btn btn-primary" id="submitBtn">Save</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <div id="deleteModal" class="modal">
+      </div>
+
+
+    <script type="module">
+        // Firebase Imports
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
+        import { getDatabase, ref, push, onValue, remove, update } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js';
+        import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, signOut } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
+
+        // --- DYNAMIC CONFIGURATION ---
+        const PARTICIPANT_FIELDS = [
+            // Step 1: Personal Info
+            { id: 'participantName', label: 'Full Name', type: 'text', icon: 'fa-user', required: true, showInTable: true, searchable: true, step: 1 },
+            { id: 'organization', label: 'Company / Org', type: 'text', icon: 'fa-building', required: false, showInTable: true, searchable: true, step: 1 },
+            // Step 2: Contact Details
+            { id: 'email', label: 'Email Address', type: 'email', icon: 'fa-envelope', required: true, showInTable: true, searchable: true, step: 2 },
+            { id: 'phone', label: 'Phone Number', type: 'tel', icon: 'fa-phone', required: true, showInTable: false, searchable: true, step: 2 },
+            // Step 3: Event Info
+            { id: 'eventName', label: 'Event Name', type: 'text', icon: 'fa-calendar-check', required: true, showInTable: true, searchable: true, step: 3 },
+            { id: 'registrationType', label: 'Registration Type', type: 'select', icon: 'fa-ticket-alt', required: true, showInTable: true, options: ['VIP', 'General', 'Student', 'Press'], step: 3 },
+            { id: 'paymentStatus', label: 'Payment Status', type: 'select', icon: 'fa-credit-card', required: true, showInTable: true, options: ['Paid', 'Unpaid', 'Pending'], step: 3 },
+        ];
+
+        const FORM_STEPS = [
+            { number: 1, title: 'Personal Info' },
+            { number: 2, title: 'Contact Details' },
+            { number: 3, title: 'Event Info' },
+        ];
+        
+        // --- FIREBASE SETUP ---
+        const firebaseConfig = {
+            apiKey: "YOUR_API_KEY", // Replace with your config
+            authDomain: "YOUR_AUTH_DOMAIN",
+            databaseURL: "YOUR_DATABASE_URL",
+            projectId: "YOUR_PROJECT_ID",
+            storageBucket: "YOUR_STORAGE_BUCKET",
+            messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
+            appId: "YOUR_APP_ID"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const database = getDatabase(app);
+        const auth = getAuth(app);
+        const itemsRef = ref(database, 'participants');
+
+        // --- GLOBAL VARIABLES & DOM ELEMENTS ---
+        let allItems = [];
+        let currentStep = 1;
+        
+        const loginContainer = document.getElementById('login-container');
+        const appContainer = document.getElementById('app-container');
+        const formModal = document.getElementById('formModal');
+        const itemForm = document.getElementById('itemForm');
+        const tableBody = document.getElementById('tableBody');
+        const tableHead = document.getElementById('tableHead');
+        const searchInput = document.getElementById('searchInput');
+        const alertBox = document.getElementById('alertBox');
+        const logoutBtn = document.getElementById('logoutBtn');
+        const loginForm = document.getElementById('loginForm');
+        const loginError = document.getElementById('loginError');
+
+        // --- AUTHENTICATION ---
+        onAuthStateChanged(auth, user => {
+            if (user) {
+                // User is logged in
+                loginContainer.style.display = 'none';
+                appContainer.style.display = 'block';
+                initializeDataTable(); // Load data only after login
+            } else {
+                // User is logged out
+                loginContainer.style.display = 'block';
+                appContainer.style.display = 'none';
+            }
+        });
+
+        loginForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const email = document.getElementById('loginEmail').value;
+            const password = document.getElementById('loginPassword').value;
+            try {
+                await signInWithEmailAndPassword(auth, email, password);
+                loginError.style.display = 'none';
+            } catch (error) {
+                loginError.textContent = "Error: " + error.message;
+                loginError.style.display = 'block';
+            }
+        });
+        
+        logoutBtn.addEventListener('click', () => signOut(auth));
+
+
+        // --- DYNAMIC UI GENERATION ---
+        function generateTableHeader() {
+            const headers = ['#', ...PARTICIPANT_FIELDS.filter(f => f.showInTable).map(f => f.label), 'Created', 'Actions'];
+            tableHead.innerHTML = `<tr>${headers.map(h => `<th>${h}</th>`).join('')}</tr>`;
+        }
+
+        function generateFormFields() {
+            const formFieldsContainer = document.getElementById('formFields');
+            const stepIndicatorsContainer = document.getElementById('step-indicators');
+            
+            formFieldsContainer.innerHTML = '';
+            stepIndicatorsContainer.innerHTML = '';
+
+            FORM_STEPS.forEach(step => {
+                // Create Step Indicator
+                stepIndicatorsContainer.innerHTML += `
+                    <div class="step-indicator" id="step-indicator-${step.number}">
+                        <div class="step-circle">${step.number}</div>
+                        <div class="step-label">${step.title}</div>
+                    </div>`;
+
+                // Create Step Content
+                const stepFields = PARTICIPANT_FIELDS.filter(f => f.step === step.number);
+                let fieldsHtml = `<div class="form-step" data-step="${step.number}">`;
+                
+                stepFields.forEach(field => {
+                    const icon = `<i class="fas ${field.icon}"></i> `;
+                    const required = field.required ? 'required' : '';
+                    if (field.type === 'select') {
+                        const options = field.options.map(opt => `<option value="${opt}">${opt}</option>`).join('');
+                        fieldsHtml += `
+                            <div class="form-group">
+                                <label for="${field.id}">${icon}${field.label}</label>
+                                <select id="${field.id}" ${required}>
+                                    <option value="">Select an option</option>${options}
+                                </select>
+                            </div>`;
+                    } else {
+                        fieldsHtml += `
+                            <div class="form-group">
+                                <label for="${field.id}">${icon}${field.label}</label>
+                                <input type="${field.type}" id="${field.id}" ${required} placeholder="${field.label}">
+                            </div>`;
+                    }
+                });
+                fieldsHtml += `</div>`;
+                formFieldsContainer.innerHTML += fieldsHtml;
+            });
+        }
+        
+        // --- MULTI-STEP FORM LOGIC ---
+        function updateFormNavigation() {
+            document.querySelectorAll('.form-step').forEach(step => step.classList.remove('active'));
+            document.querySelector(`.form-step[data-step="${currentStep}"]`).classList.add('active');
+
+            document.querySelectorAll('.step-indicator').forEach(ind => ind.classList.remove('active'));
+            document.getElementById(`step-indicator-${currentStep}`).classList.add('active');
+            
+            document.getElementById('prevBtn').style.display = currentStep > 1 ? 'inline-block' : 'none';
+            document.getElementById('nextBtn').style.display = currentStep < FORM_STEPS.length ? 'inline-block' : 'none';
+            document.getElementById('submitBtn').style.display = currentStep === FORM_STEPS.length ? 'inline-block' : 'none';
+        }
+
+        window.nextStep = function() {
+            if (validateStep() && currentStep < FORM_STEPS.length) {
+                currentStep++;
+                updateFormNavigation();
+            }
+        };
+        
+        window.prevStep = function() {
+            if (currentStep > 1) {
+                currentStep--;
+                updateFormNavigation();
+            }
+        };
+
+        function validateStep() {
+            const currentFields = PARTICIPANT_FIELDS.filter(f => f.step === currentStep);
+            for (const field of currentFields) {
+                if (field.required) {
+                    const input = document.getElementById(field.id);
+                    if (!input.value.trim()) {
+                        alert(`Please fill out the "${field.label}" field.`);
+                        input.focus();
+                        return false;
+                    }
+                }
+            }
+            return true;
+        }
+
+        // --- CRUD OPERATIONS & DATA HANDLING ---
+        function initializeDataTable() {
+            onValue(itemsRef, (snapshot) => {
+                allItems = [];
+                if (!snapshot.exists()) {
+                    tableBody.innerHTML = `<tr><td colspan="10" class="empty-state">No participants found.</td></tr>`;
+                    return;
+                }
+                snapshot.forEach((childSnapshot) => {
+                    allItems.push({ id: childSnapshot.key, ...childSnapshot.val() });
+                });
+                allItems.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+                displayItems(allItems);
+            });
+        }
+
+        function displayItems(items) {
+            const visibleFields = PARTICIPANT_FIELDS.filter(f => f.showInTable);
+            if (items.length === 0) {
+                tableBody.innerHTML = `<tr><td colspan="10" class="empty-state">No participants match your search.</td></tr>`;
+                return;
+            }
+            tableBody.innerHTML = items.map((item, index) => {
+                const cells = [
+                    index + 1,
+                    ...visibleFields.map(field => escapeHtml(item[field.id] || 'N/A')),
+                    new Date(item.createdAt).toLocaleDateString(),
+                    `<div class="no-wrap">
+                        <button class="btn btn-sm btn-edit" onclick="openEditModal('${item.id}')"><i class="fas fa-edit"></i></button>
+                        <button class="btn btn-sm btn-danger" onclick="openDeleteModal('${item.id}')"><i class="fas fa-trash"></i></button>
+                    </div>`
+                ];
+                return `<tr>${cells.map(cell => `<td>${cell}</td>`).join('')}</tr>`;
+            }).join('');
+        }
+
+        itemForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            if (!validateStep()) return;
+
+            const item = {};
+            PARTICIPANT_FIELDS.forEach(field => {
+                item[field.id] = document.getElementById(field.id).value.trim();
+            });
+
+            const id = document.getElementById('editId').value;
+            if (id) {
+                // Update
+                const itemRef = ref(database, `participants/${id}`);
+                update(itemRef, item).then(() => showAlert('Participant updated!', 'success')).catch(err => showAlert('Error: ' + err.message, 'error'));
+            } else {
+                // Create
+                item.createdAt = new Date().toISOString();
+                push(itemsRef, item).then(() => showAlert('Participant added!', 'success')).catch(err => showAlert('Error: ' + err.message, 'error'));
+            }
+            closeFormModal();
+        });
+        
+        searchInput.addEventListener('input', () => {
+            const searchTerm = searchInput.value.toLowerCase();
+            const searchableFields = PARTICIPANT_FIELDS.filter(f => f.searchable);
+            const filteredItems = allItems.filter(item =>
+                searchableFields.some(field =>
+                    item[field.id] && item[field.id].toString().toLowerCase().includes(searchTerm)
+                )
+            );
+            displayItems(filteredItems);
+        });
+
+        // --- MODAL CONTROLS ---
+        window.openAddModal = function() {
+            document.getElementById('modalTitle').textContent = 'Add New Participant';
+            document.getElementById('submitBtn').textContent = 'Save';
+            itemForm.reset();
+            document.getElementById('editId').value = '';
+            currentStep = 1;
+            updateFormNavigation();
+            formModal.classList.add('active');
+        };
+
+        window.openEditModal = function(id) {
+            const item = allItems.find(i => i.id === id);
+            if (!item) return;
+
+            document.getElementById('modalTitle').textContent = 'Edit Participant';
+            document.getElementById('submitBtn').textContent = 'Update';
+            document.getElementById('editId').value = id;
+            PARTICIPANT_FIELDS.forEach(field => {
+                document.getElementById(field.id).value = item[field.id] || '';
+            });
+            currentStep = 1;
+            updateFormNavigation();
+            formModal.classList.add('active');
+        };
+
+        window.closeFormModal = function() {
+            formModal.classList.remove('active');
+        };
+
+        // --- UTILITIES ---
+        function showAlert(message, type) {
+            alertBox.textContent = message;
+            alertBox.className = `alert alert-${type} active`;
+            setTimeout(() => { alertBox.className = 'alert'; }, 3000);
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        // --- INITIALIZATION ---
+        generateTableHeader();
+        generateFormFields();
+    </script>
+</body>
+</html>
