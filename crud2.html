@@ -321,6 +321,72 @@
         };
 
         window.closeFormModal = function() { formModal.classList.remove('active'); };
+        async function sendConfirmationEmail(participantData) {
+            // Don't try to send an email if the URL is not set
+            if (!APPS_SCRIPT_URL || APPS_SCRIPT_URL === 'https://script.google.com/a/~/macros/s/AKfycbw8l5D7aPgImOEdYpBbru-H3dePubNJg_khAoTcQYuO9wncvO-0-kajtE4PXVIUHR_T/exec') {
+                console.warn("Apps Script URL is not set. Skipping email.");
+                return;
+            }
+
+            // Prepare the data to send to our script
+            const payload = {
+                email: participantData.email,
+                name: participantData.participantName,
+                event: participantData.eventName,
+                id: participantData.id,
+                url: window.location.origin // Gets the base URL like "https://your-site.web.app"
+            };
+
+            try {
+                const response = await fetch(APPS_SCRIPT_URL, {
+                    method: 'POST',
+                    mode: 'cors', // Important for cross-origin requests
+                    redirect: 'follow', // Follow redirects, if any
+                    body: JSON.stringify(payload)
+                });
+                const result = await response.json();
+                if (result.status === "success") {
+                    console.log("Confirmation email sent successfully!");
+                } else {
+                    console.error("Email sending failed:", result.message);
+                }
+            } catch (error) {
+                console.error("Error calling the email script:", error);
+            }
+        }
+
+
+        document.getElementById('itemForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+            if (!validateStep()) return;
+
+            const item = {};
+            PARTICIPANT_FIELDS.filter(f => !f.readonly).forEach(field => {
+                item[field.id] = document.getElementById(field.id).value.trim();
+            });
+
+            const participantId = document.getElementById('participantIdField').value;
+            const itemRef = ref(database, `participants/${participantId}`);
+
+            if (isEditing) {
+                update(itemRef, item)
+                    .then(() => showAlert('Participant updated successfully!', 'success'))
+                    .catch(err => showAlert('Error: ' + err.message, 'error'));
+            } else {
+                item.createdAt = new Date().toISOString();
+                set(itemRef, item)
+                    .then(() => {
+                        showAlert('Participant added successfully!', 'success');
+                        
+                        // **STEP 3: CALL THE EMAIL FUNCTION ON SUCCESS**
+                        // Add the ID to the item object before sending
+                        item.id = participantId; 
+                        sendConfirmationEmail(item);
+                    })
+                    .catch(err => showAlert('Error: ' + err.message, 'error'));
+            }
+            closeFormModal();
+        });
 
         // --- INITIALIZATION ---
         generateTableHeader();
