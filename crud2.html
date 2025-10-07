@@ -6,22 +6,18 @@
     <title>Participant Management System</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        /* CSS styles remain the same as the previous version. */
-        /* --- General & Body Styles --- */
+        /* CSS is correct, no changes needed */
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: linear-gradient(135deg, #FFCA28 0%, #FFA000 100%); min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 20px; padding-bottom: 80px; }
-        /* --- Login Container --- */
         #login-container { width: 100%; max-width: 400px; padding: 40px; background: white; border-radius: 8px; box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1); text-align: center; animation: fadeIn 0.5s; }
         #login-container h2 { color: #E65100; margin-bottom: 10px; font-size: 1.8em; }
         #login-container p { color: #666; margin-bottom: 25px; }
         #login-container .form-group input { text-align: left; }
         #loginError { color: #BF360C; background: #FFCCBC; border: 1px solid #F57C00; padding: 10px; border-radius: 4px; margin-top: 15px; display: none; }
-        /* --- Main App Container --- */
         #app-container { display: none; width: 100%; }
         .container { max-width: 100%; margin: 0 auto; background: white; border-radius: 8px; box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1); overflow: hidden; }
         .header { background: #FFA000; color: white; padding: 20px 30px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px; }
         .header h1 { font-size: 1.8em; }
-        /* --- Buttons --- */
         .btn { padding: 10px 20px; border: none; border-radius: 4px; font-size: 0.95em; font-weight: 600; cursor: pointer; transition: all 0.3s; }
         .btn-add { background: white; color: #FFA000; }
         .btn-add:hover { background: #FFF8E1; }
@@ -31,7 +27,6 @@
         .btn-secondary:hover { background: #D0D0D0; }
         .btn-danger { background: #F57C00; color: white; }
         .btn-danger:hover { background: #E65100; }
-        /* --- Table & Content --- */
         .content { padding: 30px; }
         .table-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 15px; }
         .table-header h2 { color: #F57C00; font-size: 1.4em; }
@@ -44,7 +39,6 @@
         tbody tr { border-bottom: 1px solid #FFE082; }
         tbody td { padding: 12px; color: #333; }
         .empty-state, .loading { text-align: center; padding: 60px 20px; color: #999; }
-        /* --- Modal & Form --- */
         .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.5); z-index: 1000; animation: fadeIn 0.3s; overflow-y: auto; }
         .modal.active { display: flex; justify-content: center; align-items: center; padding: 20px; }
         .modal-content { background: white; border-radius: 8px; width: 90%; max-width: 600px; max-height: 90vh; overflow: hidden; display: flex; flex-direction: column; animation: slideDown 0.3s; }
@@ -67,7 +61,6 @@
         .form-group input[readonly] { background-color: #f5f5f5; cursor: not-allowed; }
         .modal-footer { padding: 20px 25px; display: flex; gap: 10px; justify-content: space-between; border-top: 1px solid #eee; }
         .modal-footer .right-buttons { display: flex; gap: 10px;}
-        /* --- Other components --- */
         .alert { padding: 12px 20px; margin-bottom: 20px; border-radius: 4px; display: none; }
         .alert.active { display: block; }
         .alert-success { background: #C8E6C9; color: #2E7D32; border-left: 4px solid #4CAF50; }
@@ -99,7 +92,6 @@
                     <button class="btn btn-danger" id="logoutBtn"><i class="fas fa-sign-out-alt"></i> Logout</button>
                 </div>
             </div>
-
             <div class="content">
                 <div id="alertBox" class="alert"></div>
                 <div class="table-header">
@@ -143,10 +135,12 @@
         import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
         import { getDatabase, ref, push, onValue, remove, update, set } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js';
         import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, signOut } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
+        
+        // --- ⚠️ PASTE YOUR GOOGLE APPS SCRIPT URL HERE ---
+        const APPS_SCRIPT_URL = 'PASTE_YOUR_URL_HERE'; 
 
         // --- DYNAMIC CONFIGURATION ---
         const PARTICIPANT_FIELDS = [
-            // **NEW**: Added a read-only field for the Registration ID
             { id: 'registrationId', label: 'Registration ID', type: 'text', icon: 'fa-hashtag', readonly: true, step: 1 },
             { id: 'participantName', label: 'Full Name', type: 'text', icon: 'fa-user', required: true, showInTable: true, searchable: true, step: 1 },
             { id: 'organization', label: 'Company / Org', type: 'text', icon: 'fa-building', required: false, showInTable: true, searchable: true, step: 1 },
@@ -165,14 +159,14 @@
         
         // --- FIREBASE SETUP ---
         const firebaseConfig = {
-  apiKey: "AIzaSyDNF3AtYFZWVT7K8sAuwjNnyC1sLwlCsHM",
-  authDomain: "crud-application-mg.firebaseapp.com",
-  databaseURL: "https://crud-application-mg-default-rtdb.firebaseio.com",
-  projectId: "crud-application-mg",
-  storageBucket: "crud-application-mg.firebasestorage.app",
-  messagingSenderId: "926558792141",
-  appId: "1:926558792141:web:ad2141d1b776e7c82f7c84",
-  measurementId: "G-K62DH6WBW5"
+            apiKey: "AIzaSyDNF3AtYFZWVT7K8sAuwjNnyC1sLwlCsHM",
+            authDomain: "crud-application-mg.firebaseapp.com",
+            databaseURL: "https://crud-application-mg-default-rtdb.firebaseio.com",
+            projectId: "crud-application-mg",
+            storageBucket: "crud-application-mg.firebasestorage.app",
+            messagingSenderId: "926558792141",
+            appId: "1:926558792141:web:ad2141d1b776e7c82f7c84",
+            measurementId: "G-K62DH6WBW5"
         };
 
         const app = initializeApp(firebaseConfig);
@@ -191,23 +185,29 @@
         const logoutBtn = document.getElementById('logoutBtn');
         const loginForm = document.getElementById('loginForm');
         const tableBody = document.getElementById('tableBody');
+        const tableHead = document.getElementById('tableHead');
+        const searchInput = document.getElementById('searchInput');
+        const alertBox = document.getElementById('alertBox');
         
-        // --- AUTHENTICATION ---
-        onAuthStateChanged(auth, user => {
-            if (user) {
-                loginContainer.style.display = 'none';
-                appContainer.style.display = 'block';
-                initializeDataTable();
-            } else {
-                loginContainer.style.display = 'block';
-                appContainer.style.display = 'none';
-            }
-        });
-        loginForm.addEventListener('submit', async (e) => { e.preventDefault(); /* ... (login logic is unchanged) */ });
-        logoutBtn.addEventListener('click', () => signOut(auth));
+        // --- 💡 ALL FUNCTION DEFINITIONS GO HERE, BEFORE THEY ARE CALLED ---
 
+        function showAlert(message, type) {
+            alertBox.textContent = message;
+            alertBox.className = `alert alert-${type} active`;
+            setTimeout(() => { alertBox.className = 'alert'; }, 3000);
+        }
 
-        // --- DYNAMIC UI GENERATION ---
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        function generateTableHeader() {
+            const headers = ['#', ...PARTICIPANT_FIELDS.filter(f => f.showInTable).map(f => f.label), 'Created', 'Actions'];
+            tableHead.innerHTML = `<tr>${headers.map(h => `<th>${h}</th>`).join('')}</tr>`;
+        }
+        
         function generateFormFields() {
             const formFieldsContainer = document.getElementById('formFields');
             const stepIndicatorsContainer = document.getElementById('step-indicators');
@@ -221,11 +221,10 @@
                 stepFields.forEach(field => {
                     const icon = `<i class="fas ${field.icon}"></i> `;
                     const required = field.required ? 'required' : '';
-                    // **MODIFIED**: Added readonly attribute handling
                     const readonly = field.readonly ? 'readonly' : ''; 
                     if (field.type === 'select') {
                         const options = field.options.map(opt => `<option value="${opt}">${opt}</option>`).join('');
-                        fieldsHtml += `<div class="form-group"><label>${icon}${field.label}</label><select id="${field.id}" ${required}>${options}</select></div>`;
+                        fieldsHtml += `<div class="form-group"><label>${icon}${field.label}</label><select id="${field.id}" ${required}><option value="">Select an option</option>${options}</select></div>`;
                     } else {
                         fieldsHtml += `<div class="form-group"><label>${icon}${field.label}</label><input type="${field.type}" id="${field.id}" ${required} ${readonly} placeholder="${field.label}"></div>`;
                     }
@@ -235,13 +234,26 @@
             });
         }
         
-        // --- MULTI-STEP FORM LOGIC (unchanged) ---
-        function updateFormNavigation() { /* ... */ }
-        window.nextStep = function() { /* ... */ };
-        window.prevStep = function() { /* ... */ };
-        function validateStep() { /* ... */ }
+        function displayItems(items) {
+            const visibleFields = PARTICIPANT_FIELDS.filter(f => f.showInTable);
+            if (items.length === 0) {
+                tableBody.innerHTML = `<tr><td colspan="10" class="empty-state">No participants found.</td></tr>`;
+                return;
+            }
+            tableBody.innerHTML = items.map((item, index) => {
+                const cells = [
+                    index + 1,
+                    ...visibleFields.map(field => escapeHtml(item[field.id] || 'N/A')),
+                    new Date(item.createdAt).toLocaleDateString(),
+                    `<div class="no-wrap">
+                        <button class="btn btn-sm btn-edit" onclick="openEditModal('${item.id}')"><i class="fas fa-edit"></i></button>
+                        <button class="btn btn-sm btn-danger" onclick="openDeleteModal('${item.id}')"><i class="fas fa-trash"></i></button>
+                    </div>`
+                ];
+                return `<tr>${cells.map(cell => `<td>${cell}</td>`).join('')}</tr>`;
+            }).join('');
+        }
 
-        // --- CRUD OPERATIONS & DATA HANDLING ---
         function initializeDataTable() {
             onValue(itemsRef, (snapshot) => {
                 allItems = [];
@@ -253,47 +265,57 @@
                     allItems.push({ id: childSnapshot.key, ...childSnapshot.val() });
                 });
                 allItems.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
-                // Display logic is unchanged
+                displayItems(allItems);
             });
         }
-
-        document.getElementById('itemForm').addEventListener('submit', (e) => {
-            e.preventDefault();
-            if (!validateStep()) return;
-
-            const item = {};
-            // Filter out the readonly registrationId field from the data object
-            PARTICIPANT_FIELDS.filter(f => !f.readonly).forEach(field => {
-                item[field.id] = document.getElementById(field.id).value.trim();
-            });
-
-            // **MODIFIED**: Use the ID from the hidden field for both add and edit
-            const participantId = document.getElementById('participantIdField').value;
-            const itemRef = ref(database, `participants/${participantId}`);
-
-            if (isEditing) {
-                // Update existing record
-                update(itemRef, item).then(() => alert('Participant updated!')).catch(err => alert('Error: ' + err.message));
-            } else {
-                // Create new record with the pre-generated ID
-                item.createdAt = new Date().toISOString();
-                set(itemRef, item).then(() => alert('Participant added!')).catch(err => alert('Error: ' + err.message));
-            }
-            closeFormModal();
-        });
         
-        // --- MODAL CONTROLS ---
+        function updateFormNavigation() {
+            document.querySelectorAll('.form-step').forEach(step => step.classList.remove('active'));
+            document.querySelector(`.form-step[data-step="${currentStep}"]`).classList.add('active');
+            document.querySelectorAll('.step-indicator').forEach(ind => ind.classList.remove('active'));
+            document.getElementById(`step-indicator-${currentStep}`).classList.add('active');
+            document.getElementById('prevBtn').style.display = currentStep > 1 ? 'inline-block' : 'none';
+            document.getElementById('nextBtn').style.display = currentStep < FORM_STEPS.length ? 'inline-block' : 'none';
+            document.getElementById('submitBtn').style.display = currentStep === FORM_STEPS.length ? 'inline-block' : 'none';
+        }
+
+        window.nextStep = function() {
+            if (validateStep() && currentStep < FORM_STEPS.length) {
+                currentStep++;
+                updateFormNavigation();
+            }
+        };
+        
+        window.prevStep = function() {
+            if (currentStep > 1) {
+                currentStep--;
+                updateFormNavigation();
+            }
+        };
+
+        function validateStep() {
+            const currentFields = PARTICIPANT_FIELDS.filter(f => f.step === currentStep);
+            for (const field of currentFields) {
+                if (field.required) {
+                    const input = document.getElementById(field.id);
+                    if (!input.value.trim()) {
+                        alert(`Please fill out the "${field.label}" field.`);
+                        input.focus();
+                        return false;
+                    }
+                }
+            }
+            return true;
+        }
+
         window.openAddModal = function() {
             isEditing = false;
             document.getElementById('modalTitle').textContent = 'Add New Participant';
             document.getElementById('submitBtn').textContent = 'Save';
             document.getElementById('itemForm').reset();
-            
-            // **MODIFIED**: Generate and pre-fill the unique ID
             const newId = push(itemsRef).key;
             document.getElementById('participantIdField').value = newId;
             document.getElementById('registrationId').value = newId;
-
             currentStep = 1;
             updateFormNavigation();
             formModal.classList.add('active');
@@ -303,45 +325,37 @@
             isEditing = true;
             const item = allItems.find(i => i.id === id);
             if (!item) return;
-
             document.getElementById('modalTitle').textContent = 'Edit Participant';
             document.getElementById('submitBtn').textContent = 'Update';
-
-            // **MODIFIED**: Set the ID in the hidden field and the readonly visible field
             document.getElementById('participantIdField').value = id;
             document.getElementById('registrationId').value = id;
-
             PARTICIPANT_FIELDS.filter(f => !f.readonly).forEach(field => {
                 document.getElementById(field.id).value = item[field.id] || '';
             });
-
             currentStep = 1;
             updateFormNavigation();
             formModal.classList.add('active');
         };
 
         window.closeFormModal = function() { formModal.classList.remove('active'); };
+
         async function sendConfirmationEmail(participantData) {
-            // Don't try to send an email if the URL is not set
-            if (!APPS_SCRIPT_URL || APPS_SCRIPT_URL === 'https://script.google.com/a/~/macros/s/AKfycbw8l5D7aPgImOEdYpBbru-H3dePubNJg_khAoTcQYuO9wncvO-0-kajtE4PXVIUHR_T/exec') {
+            if (!APPS_SCRIPT_URL || APPS_SCRIPT_URL === 'PASTE_YOUR_URL_HERE') {
                 console.warn("Apps Script URL is not set. Skipping email.");
                 return;
             }
-
-            // Prepare the data to send to our script
             const payload = {
                 email: participantData.email,
                 name: participantData.participantName,
                 event: participantData.eventName,
                 id: participantData.id,
-                url: window.location.origin // Gets the base URL like "https://your-site.web.app"
+                url: window.location.origin
             };
-
             try {
                 const response = await fetch(APPS_SCRIPT_URL, {
                     method: 'POST',
-                    mode: 'cors', // Important for cross-origin requests
-                    redirect: 'follow', // Follow redirects, if any
+                    mode: 'cors',
+                    redirect: 'follow',
                     body: JSON.stringify(payload)
                 });
                 const result = await response.json();
@@ -354,7 +368,36 @@
                 console.error("Error calling the email script:", error);
             }
         }
+        
+        // --- 💡 ALL EVENT LISTENERS AND INITIAL CALLS GO HERE ---
 
+        onAuthStateChanged(auth, user => {
+            if (user) {
+                loginContainer.style.display = 'none';
+                appContainer.style.display = 'block';
+                initializeDataTable();
+            } else {
+                loginContainer.style.display = 'block';
+                appContainer.style.display = 'none';
+            }
+        });
+
+        loginForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const email = document.getElementById('loginEmail').value;
+            const password = document.getElementById('loginPassword').value;
+            const loginError = document.getElementById('loginError');
+            try {
+                await signInWithEmailAndPassword(auth, email, password);
+                loginError.style.display = 'none';
+            } catch (error) {
+                console.error("Login failed:", error);
+                loginError.textContent = "Error: Invalid email or password.";
+                loginError.style.display = 'block';
+            }
+        });
+
+        logoutBtn.addEventListener('click', () => signOut(auth));
 
         document.getElementById('itemForm').addEventListener('submit', (e) => {
             e.preventDefault();
@@ -377,9 +420,6 @@
                 set(itemRef, item)
                     .then(() => {
                         showAlert('Participant added successfully!', 'success');
-                        
-                        // **STEP 3: CALL THE EMAIL FUNCTION ON SUCCESS**
-                        // Add the ID to the item object before sending
                         item.id = participantId; 
                         sendConfirmationEmail(item);
                     })
@@ -391,6 +431,7 @@
         // --- INITIALIZATION ---
         generateTableHeader();
         generateFormFields();
+        
     </script>
 </body>
 </html>
