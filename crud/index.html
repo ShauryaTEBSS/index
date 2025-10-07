@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Participant Management System</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* CSS is finalized and correct */
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: linear-gradient(135deg, #FFCA28 0%, #FFA000 100%); min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 20px; padding-bottom: 80px; }
+        #login-container { width: 100%; max-width: 400px; padding: 40px; background: white; border-radius: 8px; box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1); text-align: center; animation: fadeIn 0.5s; }
+        #login-container h2 { color: #E65100; margin-bottom: 10px; font-size: 1.8em; }
+        #login-container p { color: #666; margin-bottom: 25px; }
+        #loginError { color: #BF360C; background: #FFCCBC; border: 1px solid #F57C00; padding: 10px; border-radius: 4px; margin-top: 15px; display: none; }
+        #app-container { display: none; width: 100%; }
+        .container { max-width: 100%; margin: 0 auto; background: white; border-radius: 8px; box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1); overflow: hidden; }
+        .header { background: #FFA000; color: white; padding: 20px 30px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px; }
+        .btn { padding: 10px 20px; border: none; border-radius: 4px; font-size: 0.95em; font-weight: 600; cursor: pointer; transition: all 0.3s; }
+        .btn-add { background: white; color: #FFA000; }
+        .btn-primary { background: #FFA000; color: white; }
+        .btn-danger { background: #F57C00; color: white; }
+        .content { padding: 30px; }
+        .table-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        .search-box input { padding: 8px 15px; border: 2px solid #FFE082; border-radius: 4px; font-size: 0.95em; }
+        .table-container { overflow-x: auto; }
+        table { width: 100%; min-width: 800px; border-collapse: collapse; }
+        thead th { padding: 12px; text-align: left; color: #E65100; border-bottom: 2px solid #FFE082; }
+        tbody td { padding: 12px; color: #333; border-bottom: 1px solid #FFE082; }
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; justify-content: center; align-items: center; }
+        .modal.active { display: flex; }
+        .modal-content { background: white; border-radius: 8px; width: 90%; max-width: 600px; display: flex; flex-direction: column; }
+        .modal-header { background: #FFA000; color: white; padding: 20px; display: flex; justify-content: space-between; align-items: center; }
+        .modal-body { padding: 25px; }
+        .form-step.active { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; }
+        .form-group label { display: block; margin-bottom: 6px; color: #E65100; }
+        .form-group input, .form-group select { width: 100%; padding: 10px; border: 2px solid #FFE082; border-radius: 4px; }
+        .form-group input[readonly] { background-color: #f5f5f5; cursor: not-allowed; }
+        .modal-footer { padding: 20px 25px; display: flex; justify-content: space-between; border-top: 1px solid #eee; }
+        .alert { padding: 12px 20px; margin-bottom: 20px; border-radius: 4px; display: none; }
+        .alert.active { display: block; }
+        .alert-success { background: #C8E6C9; color: #2E7D32; border-left: 4px solid #4CAF50; }
+        .alert-error { background: #FFCCBC; color: #BF360C; border-left: 4px solid #F57C00; }
+        .footer { position: fixed; bottom: 0; left: 0; width: 100%; background: #FFA000; color: white; padding: 15px 20px; text-align: center; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+    </style>
+</head>
+<body>
+    <div id="login-container">
+        <h2><i class="fas fa-lock"></i> Welcome</h2>
+        <p>Please log in to manage participants.</p>
+        <form id="loginForm">
+            <div class="form-group"><input type="email" id="loginEmail" placeholder="Email" required></div><br>
+            <div class="form-group"><input type="password" id="loginPassword" placeholder="Password" required></div>
+            <div id="loginError"></div><br>
+            <button type="submit" class="btn btn-primary" style="width: 100%;">Login</button>
+        </form>
+    </div>
+
+    <div id="app-container">
+        <div class="container">
+            <div class="header">
+                <h1><i class="fas fa-users"></i> Participant Management</h1>
+                <div class="header-buttons">
+                    <button class="btn btn-add" onclick="openAddModal()"><i class="fas fa-user-plus"></i> Add Participant</button>
+                    <button class="btn btn-danger" id="logoutBtn"><i class="fas fa-sign-out-alt"></i> Logout</button>
+                </div>
+            </div>
+            <div class="content">
+                <div id="alertBox" class="alert"></div>
+                <div class="table-header">
+                    <h2>All Participants</h2>
+                    <div class="search-box"><input type="text" id="searchInput" placeholder="Search..."></div>
+                </div>
+                <div class="table-container">
+                    <table id="dataTable">
+                        <thead id="tableHead"></thead>
+                        <tbody id="tableBody"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        <footer class="footer"><div>Participant Management System | Powered by Firebase</div></footer>
+    </div>
+    
+    <div id="formModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="modalTitle">Add Participant</h2>
+                <button class="close-btn" onclick="closeFormModal()">&times;</button>
+            </div>
+            <div id="step-indicators" class="step-indicator-container"></div>
+            <form id="itemForm">
+                <input type="hidden" id="participantIdField">
+                <div class="modal-body" id="formFields"></div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" id="prevBtn" onclick="prevStep()">Previous</button>
+                    <div class="right-buttons">
+                        <button type="button" class="btn btn-secondary" onclick="closeFormModal()">Cancel</button>
+                        <button type="button" class="btn btn-primary" id="nextBtn" onclick="nextStep()">Next</button>
+                        <button type="submit" class="btn btn-primary" id="submitBtn">Save</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
+        import { getDatabase, ref, push, onValue, remove, update, set } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js';
+        import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, signOut } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
+        
+        // --- ✅ YOUR APPS SCRIPT URL IS PLACED HERE ---
+        const APPS_SCRIPT_URL = 'https://script.google.com/a/~/macros/s/AKfycbw8l5D7aPgImOEdYpBbru-H3dePubNJg_khAoTcQYuO9wncvO-0-kajtE4PXVIUHR_T/exec'; 
+
+        // --- DYNAMIC CONFIGURATION ---
+        const PARTICIPANT_FIELDS = [
+            { id: 'registrationId', label: 'Registration ID', type: 'text', icon: 'fa-hashtag', readonly: true, step: 1 },
+            { id: 'participantName', label: 'Full Name', type: 'text', icon: 'fa-user', required: true, showInTable: true, searchable: true, step: 1 },
+            { id: 'organization', label: 'Company / Org', type: 'text', icon: 'fa-building', required: false, showInTable: true, searchable: true, step: 1 },
+            { id: 'email', label: 'Email Address', type: 'email', icon: 'fa-envelope', required: true, showInTable: true, searchable: true, step: 2 },
+            { id: 'phone', label: 'Phone Number', type: 'tel', icon: 'fa-phone', required: true, showInTable: false, searchable: true, step: 2 },
+            { id: 'eventName', label: 'Event Name', type: 'text', icon: 'fa-calendar-check', required: true, showInTable: true, searchable: true, step: 3 },
+            { id: 'registrationType', label: 'Registration Type', type: 'select', icon: 'fa-ticket-alt', required: true, showInTable: true, options: ['VIP', 'General', 'Student', 'Press'], step: 3 },
+            { id: 'paymentStatus', label: 'Payment Status', type: 'select', icon: 'fa-credit-card', required: true, showInTable: true, options: ['Paid', 'Unpaid', 'Pending'], step: 3 },
+        ];
+        const FORM_STEPS = [ { number: 1, title: 'Personal Info' }, { number: 2, title: 'Contact Details' }, { number: 3, title: 'Event Info' }];
+        
+        // --- FIREBASE SETUP ---
+        const firebaseConfig = {
+            apiKey: "AIzaSyDNF3AtYFZWVT7K8sAuwjNnyC1sLwlCsHM",
+            authDomain: "crud-application-mg.firebaseapp.com",
+            databaseURL: "https://crud-application-mg-default-rtdb.firebaseio.com",
+            projectId: "crud-application-mg",
+            storageBucket: "crud-application-mg.firebasestorage.app",
+            messagingSenderId: "926558792141",
+            appId: "1:926558792141:web:ad2141d1b776e7c82f7c84"
+        };
+        const app = initializeApp(firebaseConfig);
+        const database = getDatabase(app);
+        const auth = getAuth(app);
+        const itemsRef = ref(database, 'participants');
+
+        // --- GLOBAL VARIABLES & DOM ELEMENTS ---
+        let allItems = [], currentStep = 1, isEditing = false;
+        const loginContainer = document.getElementById('login-container');
+        const appContainer = document.getElementById('app-container');
+        const formModal = document.getElementById('formModal');
+        const logoutBtn = document.getElementById('logoutBtn');
+        const loginForm = document.getElementById('loginForm');
+        const tableBody = document.getElementById('tableBody');
+        const tableHead = document.getElementById('tableHead');
+        const alertBox = document.getElementById('alertBox');
+        
+        // --- ALL FUNCTION DEFINITIONS ---
+        function showAlert(message, type) {
+            alertBox.textContent = message;
+            alertBox.className = `alert alert-${type} active`;
+            setTimeout(() => { alertBox.className = 'alert'; }, 3000);
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        function generateTableHeader() {
+            const headers = ['#', ...PARTICIPANT_FIELDS.filter(f => f.showInTable).map(f => f.label), 'Created', 'Actions'];
+            tableHead.innerHTML = `<tr>${headers.map(h => `<th>${h}</th>`).join('')}</tr>`;
+        }
+        
+        function generateFormFields() {
+            const formFieldsContainer = document.getElementById('formFields');
+            const stepIndicatorsContainer = document.getElementById('step-indicators');
+            formFieldsContainer.innerHTML = '';
+            stepIndicatorsContainer.innerHTML = '';
+            FORM_STEPS.forEach(step => {
+                stepIndicatorsContainer.innerHTML += `<div class="step-indicator" id="step-indicator-${step.number}"><div class="step-circle">${step.number}</div><div class="step-label">${step.title}</div></div>`;
+                const stepFields = PARTICIPANT_FIELDS.filter(f => f.step === step.number);
+                let fieldsHtml = `<div class="form-step" data-step="${step.number}">`;
+                stepFields.forEach(field => {
+                    const icon = `<i class="fas ${field.icon}"></i> `;
+                    const required = field.required ? 'required' : '';
+                    const readonly = field.readonly ? 'readonly' : ''; 
+                    if (field.type === 'select') {
+                        const options = field.options.map(opt => `<option value="${opt}">${opt}</option>`).join('');
+                        fieldsHtml += `<div class="form-group"><label>${icon}${field.label}</label><select id="${field.id}" ${required}><option value="">Select an option</option>${options}</select></div>`;
+                    } else {
+                        fieldsHtml += `<div class="form-group"><label>${icon}${field.label}</label><input type="${field.type}" id="${field.id}" ${required} ${readonly} placeholder="${field.label}"></div>`;
+                    }
+                });
+                fieldsHtml += `</div>`;
+                formFieldsContainer.innerHTML += fieldsHtml;
+            });
+        }
+        
+        function displayItems(items) {
+            const visibleFields = PARTICIPANT_FIELDS.filter(f => f.showInTable);
+            if (items.length === 0) {
+                tableBody.innerHTML = `<tr><td colspan="10" class="empty-state">No participants found.</td></tr>`;
+                return;
+            }
+            tableBody.innerHTML = items.map((item, index) => {
+                const cells = [
+                    index + 1,
+                    ...visibleFields.map(field => escapeHtml(item[field.id] || 'N/A')),
+                    new Date(item.createdAt).toLocaleDateString(),
+                    `<div class="no-wrap"><button class="btn btn-sm btn-edit" onclick="openEditModal('${item.id}')"><i class="fas fa-edit"></i></button><button class="btn btn-sm btn-danger" onclick="openDeleteModal('${item.id}')"><i class="fas fa-trash"></i></button></div>`
+                ];
+                return `<tr>${cells.map(cell => `<td>${cell}</td>`).join('')}</tr>`;
+            }).join('');
+        }
+
+        function initializeDataTable() {
+            onValue(itemsRef, (snapshot) => {
+                allItems = [];
+                if (snapshot.exists()) {
+                    snapshot.forEach((child) => allItems.push({ id: child.key, ...child.val() }));
+                    allItems.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+                }
+                displayItems(allItems);
+            });
+        }
+        
+        function updateFormNavigation() {
+            document.querySelectorAll('.form-step').forEach(s => s.classList.remove('active'));
+            document.querySelector(`.form-step[data-step="${currentStep}"]`).classList.add('active');
+            document.querySelectorAll('.step-indicator').forEach(i => i.classList.remove('active'));
+            document.getElementById(`step-indicator-${currentStep}`).classList.add('active');
+            document.getElementById('prevBtn').style.display = currentStep > 1 ? 'inline-block' : 'none';
+            document.getElementById('nextBtn').style.display = currentStep < FORM_STEPS.length ? 'inline-block' : 'none';
+            document.getElementById('submitBtn').style.display = currentStep === FORM_STEPS.length ? 'inline-block' : 'none';
+        }
+
+        window.nextStep = () => { if(validateStep()) { currentStep++; updateFormNavigation(); } };
+        window.prevStep = () => { if(currentStep > 1) { currentStep--; updateFormNavigation(); } };
+
+        function validateStep() {
+            for (const field of PARTICIPANT_FIELDS.filter(f => f.step === currentStep)) {
+                if (field.required && !document.getElementById(field.id).value.trim()) {
+                    alert(`Please fill out the "${field.label}" field.`);
+                    return false;
+                }
+            }
+            return true;
+        }
+
+        window.openAddModal = function() {
+            isEditing = false;
+            document.getElementById('modalTitle').textContent = 'Add New Participant';
+            document.getElementById('itemForm').reset();
+            const newId = push(itemsRef).key;
+            document.getElementById('participantIdField').value = newId;
+            document.getElementById('registrationId').value = newId;
+            currentStep = 1;
+            updateFormNavigation();
+            formModal.classList.add('active');
+        };
+
+        window.openEditModal = function(id) {
+            isEditing = true;
+            const item = allItems.find(i => i.id === id);
+            if (!item) return;
+            document.getElementById('modalTitle').textContent = 'Edit Participant';
+            document.getElementById('participantIdField').value = id;
+            document.getElementById('registrationId').value = id;
+            PARTICIPANT_FIELDS.filter(f => !f.readonly).forEach(field => {
+                document.getElementById(field.id).value = item[field.id] || '';
+            });
+            currentStep = 1;
+            updateFormNavigation();
+            formModal.classList.add('active');
+        };
+
+        window.closeFormModal = function() { formModal.classList.remove('active'); };
+
+        async function sendConfirmationEmail(participantData) {
+            console.log("Preparing to send email for participant:", participantData.id);
+            const payload = {
+                email: participantData.email,
+                name: participantData.participantName,
+                event: participantData.eventName,
+                id: participantData.id,
+                url: window.location.origin 
+            };
+            try {
+                await fetch(APPS_SCRIPT_URL, {
+                    method: 'POST',
+                    mode: 'no-cors',
+                    body: JSON.stringify(payload)
+                });
+                console.log("Email request sent to Apps Script successfully!");
+            } catch (error) {
+                console.error("Error sending email request:", error);
+                showAlert('Participant saved, but failed to send confirmation email.', 'error');
+            }
+        }
+        
+        // --- EVENT LISTENERS & INITIALIZATION ---
+        onAuthStateChanged(auth, user => {
+            if (user) {
+                loginContainer.style.display = 'none';
+                appContainer.style.display = 'block';
+                initializeDataTable();
+            } else {
+                loginContainer.style.display = 'block';
+                appContainer.style.display = 'none';
+            }
+        });
+
+        loginForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const email = document.getElementById('loginEmail').value;
+            const password = document.getElementById('loginPassword').value;
+            const loginError = document.getElementById('loginError');
+            try {
+                await signInWithEmailAndPassword(auth, email, password);
+                loginError.style.display = 'none';
+            } catch (error) {
+                loginError.textContent = "Error: Invalid email or password.";
+                loginError.style.display = 'block';
+            }
+        });
+
+        logoutBtn.addEventListener('click', () => signOut(auth));
+
+        document.getElementById('itemForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+            if (!validateStep()) return;
+            const item = {};
+            PARTICIPANT_FIELDS.filter(f => !f.readonly).forEach(field => {
+                item[field.id] = document.getElementById(field.id).value.trim();
+            });
+            const participantId = document.getElementById('participantIdField').value;
+            const itemRef = ref(database, `participants/${participantId}`);
+            if (isEditing) {
+                update(itemRef, item).then(() => showAlert('Participant updated!', 'success'));
+            } else {
+                item.createdAt = new Date().toISOString();
+                set(itemRef, item).then(() => {
+                    showAlert('Participant added!', 'success');
+                    item.id = participantId; 
+                    sendConfirmationEmail(item);
+                });
+            }
+            closeFormModal();
+        });
+
+        // --- INITIALIZATION ---
+        generateTableHeader();
+        generateFormFields();
+    </script>
+</body>
+</html>
