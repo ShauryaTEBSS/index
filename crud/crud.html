@@ -1,0 +1,702 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Participant Management System</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* CSS Variables for easy theming */
+        :root {
+            --primary-color: #FFA000;
+            --primary-dark: #E65100;
+            --primary-light: #FFCA28;
+            --danger-color: #D32F2F;
+            --success-color: #388E3C;
+            --light-gray: #f4f4f4;
+            --dark-gray: #333;
+            --border-color: #FFE0B2;
+            --shadow-color: rgba(0, 0, 0, 0.1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, var(--primary-light), var(--primary-color));
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            color: var(--dark-gray);
+        }
+        
+        /* --- Animations --- */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        @keyframes modalOpen {
+            from { opacity: 0; transform: scale(0.95); }
+            to { opacity: 1; transform: scale(1); }
+        }
+
+        @keyframes alertSlideIn {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* --- Login Screen --- */
+        #login-container {
+            width: 100%;
+            max-width: 400px;
+            padding: 40px;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 8px 30px var(--shadow-color);
+            text-align: center;
+            animation: fadeIn 0.5s ease-out;
+        }
+
+        #login-container h2 {
+            color: var(--primary-dark);
+            margin-bottom: 10px;
+            font-size: 2em;
+        }
+
+        #login-container .form-group input {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid var(--border-color);
+            border-radius: 8px;
+            margin-bottom: 15px;
+            transition: border-color 0.3s, box-shadow 0.3s;
+        }
+
+        #login-container .form-group input:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(255, 160, 0, 0.3);
+            outline: none;
+        }
+        
+        #loginError {
+            color: var(--danger-color);
+            background: #FFCDD2;
+            padding: 10px;
+            border-radius: 8px;
+            margin-top: 15px;
+            display: none;
+            animation: fadeIn 0.3s;
+        }
+
+        /* --- Main Application --- */
+        #app-container {
+            display: none;
+            width: 100%;
+            max-width: 1200px;
+            animation: fadeIn 0.5s ease-out;
+        }
+        
+        .container {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 8px 30px var(--shadow-color);
+            overflow: hidden;
+        }
+
+        .header {
+            background: var(--primary-color);
+            color: white;
+            padding: 20px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+        
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            font-size: 0.95em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+        }
+
+        .btn-add { background: white; color: var(--primary-color); }
+        .btn-primary { background: var(--primary-color); color: white; border: 2px solid var(--primary-color); }
+        .btn-danger { background: var(--danger-color); color: white; }
+        .btn-secondary { background: #eee; color: #555; }
+        .btn-secondary:hover { background: #ddd; }
+
+        .content { padding: 30px; }
+        
+        .table-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .search-box input {
+            padding: 10px 15px;
+            border: 2px solid var(--border-color);
+            border-radius: 8px;
+            width: 250px;
+            font-size: 1em;
+            transition: all 0.3s ease;
+        }
+
+        .search-box input:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(255, 160, 0, 0.3);
+        }
+
+        .table-container { overflow-x: auto; }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        thead th {
+            padding: 15px;
+            text-align: left;
+            font-size: 0.9em;
+            text-transform: uppercase;
+            color: var(--primary-dark);
+            border-bottom: 3px solid var(--primary-color);
+        }
+        
+        tbody tr {
+            transition: background-color 0.2s ease;
+        }
+
+        tbody tr:nth-child(even) {
+            background-color: var(--light-gray);
+        }
+
+        tbody tr:hover {
+            background-color: var(--border-color);
+        }
+        
+        tbody td {
+            padding: 15px;
+            color: #555;
+            border-bottom: 1px solid #eee;
+        }
+
+        .actions-cell { white-space: nowrap; }
+        .actions-cell .btn { padding: 8px 12px; }
+
+        /* --- Modal --- */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.6);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        
+        .modal.active { display: flex; }
+        
+        .modal-content {
+            background: white;
+            border-radius: 12px;
+            width: 100%;
+            max-width: 650px;
+            animation: modalOpen 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            overflow: hidden;
+        }
+        
+        .modal-header {
+            background: var(--primary-color);
+            color: white;
+            padding: 15px 25px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-header .close-btn {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 1.8em;
+            cursor: pointer;
+            transition: transform 0.3s;
+        }
+        .modal-header .close-btn:hover { transform: rotate(90deg); }
+        
+        .modal-body { padding: 30px; }
+        
+        .form-steps-container {
+            display: flex;
+            overflow-x: hidden;
+        }
+        
+        .form-step {
+            min-width: 100%;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            transition: transform 0.4s ease-in-out;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: var(--primary-dark);
+            font-weight: 600;
+        }
+        
+        .form-group input, .form-group select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid var(--border-color);
+            border-radius: 8px;
+            transition: all 0.3s;
+        }
+        
+        .form-group input:focus, .form-group select:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(255, 160, 0, 0.3);
+        }
+        
+        .modal-footer {
+            padding: 20px 30px;
+            display: flex;
+            justify-content: space-between;
+            background: var(--light-gray);
+        }
+        
+        /* --- Alert Box --- */
+        .alert-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 2000;
+        }
+
+        .alert {
+            padding: 15px 25px;
+            border-radius: 8px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            border-left: 5px solid;
+            animation: alertSlideIn 0.5s ease-out;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .alert-success { background: #E8F5E9; color: var(--success-color); border-color: var(--success-color); }
+        .alert-error { background: #FFEBEE; color: var(--danger-color); border-color: var(--danger-color); }
+
+    </style>
+</head>
+<body>
+
+    <div id="login-container">
+        <h2><i class="fas fa-lock"></i> Welcome Back</h2>
+        <p>Log in to manage your participants.</p>
+        <form id="loginForm">
+            <div class="form-group"><input type="email" id="loginEmail" placeholder="Email Address" required></div>
+            <div class="form-group"><input type="password" id="loginPassword" placeholder="Password" required></div>
+            <div id="loginError"></div>
+            <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 10px;">Login</button>
+        </form>
+    </div>
+
+    <div id="app-container">
+        <div class="container">
+            <div class="header">
+                <h1><i class="fas fa-users"></i> Participants</h1>
+                <div class="header-buttons">
+                    <button id="addParticipantBtn" class="btn btn-add"><i class="fas fa-user-plus"></i> Add Participant</button>
+                    <button id="logoutBtn" class="btn btn-danger"><i class="fas fa-sign-out-alt"></i> Logout</button>
+                </div>
+            </div>
+            <div class="content">
+                <div class="table-header">
+                    <h2>All Participants</h2>
+                    <div class="search-box">
+                        <input type="text" id="searchInput" placeholder="Search by name, email, etc...">
+                    </div>
+                </div>
+                <div class="table-container">
+                    <table>
+                        <thead id="tableHead"></thead>
+                        <tbody id="tableBody"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="formModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="modalTitle">Add Participant</h2>
+                <button class="close-btn" data-modal-close="formModal">&times;</button>
+            </div>
+            <form id="participantForm" novalidate>
+                <div class="modal-body">
+                    <div class="form-steps-container">
+                        </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" id="prevBtn">Previous</button>
+                    <div>
+                        <button type="button" class="btn btn-secondary" data-modal-close="formModal">Cancel</button>
+                        <button type="button" class="btn btn-primary" id="nextBtn">Next</button>
+                        <button type="submit" class="btn btn-primary" id="submitBtn">Save Participant</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div id="deleteModal" class="modal">
+        <div class="modal-content" style="max-width: 450px;">
+            <div class="modal-header" style="background: var(--danger-color);">
+                <h2><i class="fas fa-exclamation-triangle"></i> Confirm Deletion</h2>
+            </div>
+            <div class="modal-body" style="text-align: center;">
+                <p style="font-size: 1.1em; margin-bottom: 20px;">Are you sure you want to delete this participant? This action cannot be undone.</p>
+                <div style="display: flex; justify-content: center; gap: 15px;">
+                    <button type="button" class="btn btn-secondary" data-modal-close="deleteModal">Cancel</button>
+                    <button type="button" id="confirmDeleteBtn" class="btn btn-danger">Yes, Delete</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="alertContainer" class="alert-container"></div>
+    
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
+        import { getDatabase, ref, push, onValue, remove, update, set } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js';
+        import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, signOut } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
+        
+        // --- YOUR APPS SCRIPT URL ---
+        const APPS_SCRIPT_URL = 'https://script.google.com/a/~/macros/s/AKfycbw8l5D7aPgImOEdYpBbru-H3dePubNJg_khAoTcQYuO9wncvO-0-kajtE4PXVIUHR_T/exec';
+
+        // --- DYNAMIC CONFIGURATION ---
+        const PARTICIPANT_FIELDS = [
+            { id: 'registrationId', label: 'Registration ID', type: 'text', icon: 'fa-hashtag', readonly: true, step: 1 },
+            { id: 'participantName', label: 'Full Name', type: 'text', icon: 'fa-user', required: true, showInTable: true, searchable: true, step: 1 },
+            { id: 'organization', label: 'Company / Org', type: 'text', icon: 'fa-building', showInTable: true, searchable: true, step: 1 },
+            { id: 'email', label: 'Email Address', type: 'email', icon: 'fa-envelope', required: true, showInTable: true, searchable: true, step: 2 },
+            { id: 'phone', label: 'Phone Number', type: 'tel', icon: 'fa-phone', required: true, showInTable: false, searchable: true, step: 2 },
+            { id: 'eventName', label: 'Event Name', type: 'text', icon: 'fa-calendar-check', required: true, showInTable: true, searchable: true, step: 3 },
+            { id: 'registrationType', label: 'Registration Type', type: 'select', icon: 'fa-ticket-alt', required: true, showInTable: true, options: ['VIP', 'General', 'Student', 'Press'], step: 3 },
+            { id: 'paymentStatus', label: 'Payment Status', type: 'select', icon: 'fa-credit-card', required: true, showInTable: true, options: ['Paid', 'Unpaid', 'Pending'], step: 3 },
+        ];
+        const FORM_STEPS = 3;
+
+        // --- FIREBASE SETUP ---
+        const firebaseConfig = {
+            apiKey: "AIzaSyDNF3AtYFZWVT7K8sAuwjNnyC1sLwlCsHM",
+            authDomain: "crud-application-mg.firebaseapp.com",
+            databaseURL: "https://crud-application-mg-default-rtdb.firebaseio.com",
+            projectId: "crud-application-mg",
+            storageBucket: "crud-application-mg.appspot.com",
+            messagingSenderId: "926558792141",
+            appId: "1:926558792141:web:ad2141d1b776e7c82f7c84"
+        };
+        const app = initializeApp(firebaseConfig);
+        const database = getDatabase(app);
+        const auth = getAuth(app);
+        const participantsRef = ref(database, 'participants');
+
+        // --- GLOBAL STATE & DOM ELEMENTS ---
+        const state = {
+            allItems: [],
+            isEditing: false,
+            editingId: null,
+            deleteId: null,
+            currentStep: 1,
+        };
+        
+        const loginContainer = document.getElementById('login-container');
+        const appContainer = document.getElementById('app-container');
+        const tableHead = document.getElementById('tableHead');
+        const tableBody = document.getElementById('tableBody');
+        const searchInput = document.getElementById('searchInput');
+        const formModal = document.getElementById('formModal');
+        const deleteModal = document.getElementById('deleteModal');
+        const participantForm = document.getElementById('participantForm');
+        
+        // --- UTILITY FUNCTIONS ---
+        const showAlert = (message, type = 'success') => {
+            const alertContainer = document.getElementById('alertContainer');
+            const icon = type === 'success' ? 'fa-check-circle' : 'fa-exclamation-circle';
+            const alertDiv = document.createElement('div');
+            alertDiv.className = `alert alert-${type}`;
+            alertDiv.innerHTML = `<i class="fas ${icon}"></i> ${message}`;
+            alertContainer.appendChild(alertDiv);
+            setTimeout(() => {
+                alertDiv.style.opacity = '0';
+                alertDiv.style.transform = 'translateY(-20px)';
+                setTimeout(() => alertDiv.remove(), 300);
+            }, 4000);
+        };
+
+        const toggleModal = (modalId, show) => {
+            const modal = document.getElementById(modalId);
+            if (show) modal.classList.add('active');
+            else modal.classList.remove('active');
+        };
+
+        // --- TABLE & FORM RENDERING ---
+        const generateTableHeader = () => {
+            const headers = ['#', ...PARTICIPANT_FIELDS.filter(f => f.showInTable).map(f => f.label), 'Created', 'Actions'];
+            tableHead.innerHTML = `<tr>${headers.map(h => `<th>${h}</th>`).join('')}</tr>`;
+        };
+
+        const renderTable = (items) => {
+            const visibleFields = PARTICIPANT_FIELDS.filter(f => f.showInTable);
+            if (items.length === 0) {
+                tableBody.innerHTML = `<tr><td colspan="${visibleFields.length + 3}" style="text-align:center; padding: 40px;">No participants found.</td></tr>`;
+                return;
+            }
+            tableBody.innerHTML = items.map((item, index) => {
+                const cells = [
+                    index + 1,
+                    ...visibleFields.map(field => item[field.id] || 'N/A'),
+                    new Date(item.createdAt).toLocaleDateString(),
+                    `<div class="actions-cell">
+                        <button class="btn btn-edit" data-edit-id="${item.id}"><i class="fas fa-edit"></i></button>
+                        <button class="btn btn-danger" data-delete-id="${item.id}"><i class="fas fa-trash"></i></button>
+                    </div>`
+                ];
+                return `<tr>${cells.map(cell => `<td>${cell}</td>`).join('')}</tr>`;
+            }).join('');
+        };
+
+        const generateFormFields = () => {
+            const container = formModal.querySelector('.form-steps-container');
+            container.innerHTML = '';
+            for (let i = 1; i <= FORM_STEPS; i++) {
+                const stepFields = PARTICIPANT_FIELDS.filter(f => f.step === i);
+                let fieldsHtml = `<div class="form-step" data-step="${i}">`;
+                stepFields.forEach(field => {
+                    const required = field.required ? 'required' : '';
+                    const readonly = field.readonly ? 'readonly' : '';
+                    fieldsHtml += `<div class="form-group">
+                        <label for="${field.id}"><i class="fas ${field.icon}"></i> ${field.label}</label>`;
+                    if (field.type === 'select') {
+                        const options = field.options.map(opt => `<option value="${opt}">${opt}</option>`).join('');
+                        fieldsHtml += `<select id="${field.id}" name="${field.id}" ${required}><option value="">Select...</option>${options}</select>`;
+                    } else {
+                        fieldsHtml += `<input type="${field.type}" id="${field.id}" name="${field.id}" ${required} ${readonly}>`;
+                    }
+                    fieldsHtml += `</div>`;
+                });
+                fieldsHtml += `</div>`;
+                container.innerHTML += fieldsHtml;
+            }
+        };
+
+        const updateFormNavigation = () => {
+            const formContainer = formModal.querySelector('.form-steps-container');
+            formContainer.style.transform = `translateX(-${(state.currentStep - 1) * 100}%)`;
+
+            document.getElementById('prevBtn').style.display = state.currentStep > 1 ? 'inline-flex' : 'none';
+            document.getElementById('nextBtn').style.display = state.currentStep < FORM_STEPS ? 'inline-flex' : 'none';
+            document.getElementById('submitBtn').style.display = state.currentStep === FORM_STEPS ? 'inline-flex' : 'none';
+        };
+
+        // --- CORE LOGIC (CRUD & AUTH) ---
+        const initializeDataTable = () => {
+            onValue(participantsRef, (snapshot) => {
+                state.allItems = [];
+                if (snapshot.exists()) {
+                    snapshot.forEach(child => state.allItems.push({ id: child.key, ...child.val() }));
+                    state.allItems.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+                }
+                renderTable(state.allItems);
+            });
+        };
+
+        const handleAdd = () => {
+            state.isEditing = false;
+            state.editingId = null;
+            state.currentStep = 1;
+            participantForm.reset();
+            document.getElementById('modalTitle').textContent = 'Add New Participant';
+            const newId = push(participantsRef).key;
+            document.getElementById('registrationId').value = newId.substring(newId.length - 8).toUpperCase();
+            updateFormNavigation();
+            toggleModal('formModal', true);
+        };
+
+        const handleEdit = (id) => {
+            const item = state.allItems.find(i => i.id === id);
+            if (!item) return;
+            state.isEditing = true;
+            state.editingId = id;
+            state.currentStep = 1;
+            document.getElementById('modalTitle').textContent = 'Edit Participant';
+            PARTICIPANT_FIELDS.forEach(field => {
+                document.getElementById(field.id).value = item[field.id] || '';
+            });
+            updateFormNavigation();
+            toggleModal('formModal', true);
+        };
+        
+        const handleDelete = (id) => {
+            state.deleteId = id;
+            toggleModal('deleteModal', true);
+        };
+
+        const confirmDelete = () => {
+            if (!state.deleteId) return;
+            remove(ref(database, `participants/${state.deleteId}`))
+                .then(() => showAlert('Participant deleted successfully.', 'success'))
+                .catch(err => showAlert(`Error: ${err.message}`, 'error'));
+            toggleModal('deleteModal', false);
+            state.deleteId = null;
+        };
+
+        const sendConfirmationEmail = async (participantData) => {
+            try {
+                await fetch(APPS_SCRIPT_URL, {
+                    method: 'POST',
+                    mode: 'no-cors',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(participantData)
+                });
+            } catch (error) {
+                console.error("Failed to send confirmation email:", error);
+                showAlert('Participant saved, but failed to send confirmation email.', 'error');
+            }
+        };
+
+        // --- EVENT LISTENERS ---
+        document.addEventListener('DOMContentLoaded', () => {
+            generateTableHeader();
+            generateFormFields();
+
+            onAuthStateChanged(auth, user => {
+                if (user) {
+                    loginContainer.style.display = 'none';
+                    appContainer.style.display = 'block';
+                    initializeDataTable();
+                } else {
+                    loginContainer.style.display = 'block';
+                    appContainer.style.display = 'none';
+                }
+            });
+
+            loginForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const email = document.getElementById('loginEmail').value;
+                const password = document.getElementById('loginPassword').value;
+                const loginError = document.getElementById('loginError');
+                try {
+                    await signInWithEmailAndPassword(auth, email, password);
+                    loginError.style.display = 'none';
+                } catch (error) {
+                    loginError.textContent = "Error: Invalid email or password.";
+                    loginError.style.display = 'block';
+                }
+            });
+
+            document.getElementById('logoutBtn').addEventListener('click', () => signOut(auth));
+            document.getElementById('addParticipantBtn').addEventListener('click', handleAdd);
+            document.getElementById('confirmDeleteBtn').addEventListener('click', confirmDelete);
+
+            tableBody.addEventListener('click', (e) => {
+                const editBtn = e.target.closest('.btn-edit');
+                const deleteBtn = e.target.closest('.btn-danger');
+                if (editBtn) handleEdit(editBtn.dataset.editId);
+                if (deleteBtn) handleDelete(deleteBtn.dataset.deleteId);
+            });
+
+            document.querySelectorAll('[data-modal-close]').forEach(btn => {
+                btn.addEventListener('click', () => toggleModal(btn.dataset.modalClose, false));
+            });
+
+            searchInput.addEventListener('input', (e) => {
+                const searchTerm = e.target.value.toLowerCase();
+                const searchableFields = PARTICIPANT_FIELDS.filter(f => f.searchable).map(f => f.id);
+                const filteredItems = state.allItems.filter(item => 
+                    searchableFields.some(field => 
+                        item[field] && item[field].toLowerCase().includes(searchTerm)
+                    )
+                );
+                renderTable(filteredItems);
+            });
+
+            // Form navigation
+            document.getElementById('nextBtn').addEventListener('click', () => {
+                if (state.currentStep < FORM_STEPS) {
+                    state.currentStep++;
+                    updateFormNavigation();
+                }
+            });
+            document.getElementById('prevBtn').addEventListener('click', () => {
+                if (state.currentStep > 1) {
+                    state.currentStep--;
+                    updateFormNavigation();
+                }
+            });
+
+            participantForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                const participantData = {};
+                PARTICIPANT_FIELDS.forEach(field => {
+                    participantData[field.id] = document.getElementById(field.id).value.trim();
+                });
+
+                if (state.isEditing) {
+                    // Update existing participant
+                    const itemRef = ref(database, `participants/${state.editingId}`);
+                    update(itemRef, participantData)
+                        .then(() => showAlert('Participant updated successfully!'))
+                        .catch(err => showAlert(`Error: ${err.message}`, 'error'));
+                } else {
+                    // Add new participant
+                    participantData.createdAt = new Date().toISOString();
+                    const newItemRef = push(participantsRef); // Generate a new reference
+                    set(newItemRef, participantData) // Set the data at that reference
+                        .then(() => {
+                            showAlert('Participant added successfully!');
+                            sendConfirmationEmail({ ...participantData, id: newItemRef.key });
+                        })
+                        .catch(err => showAlert(`Error: ${err.message}`, 'error'));
+                }
+                toggleModal('formModal', false);
+            });
+        });
+    </script>
+</body>
+</html>
