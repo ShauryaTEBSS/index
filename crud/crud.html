@@ -26,14 +26,16 @@
         }
 
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, var(--primary-light), var(--primary-color));
-            min-height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 20px;
-            color: var(--dark-gray);
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: linear-gradient(135deg, var(--primary-light), var(--primary-color));
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    /* The change is here: aligns content to the top and allows scrolling */
+    align-items: flex-start;
+    padding: 50px 20px; /* Added more vertical padding */
+    color: var(--dark-gray);
+};
         }
         
         /* --- Animations --- */
