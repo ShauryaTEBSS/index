@@ -1,0 +1,819 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sentinel | Proctored Exam System</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+
+    <!-- Markdown Parser -->
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #f1f1f1; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+
+        .hidden-view { display: none !important; }
+        
+        /* Camera Mirror */
+        #webcam-feed { transform: scaleX(-1); object-fit: cover; }
+        
+        /* Recording Pulse */
+        @keyframes pulse-red {
+            0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); }
+            70% { box-shadow: 0 0 0 10px rgba(239, 68, 68, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+        }
+        .recording-dot { animation: pulse-red 2s infinite; }
+
+        .no-select {
+            user-select: none;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+        }
+
+        .ai-loading {
+            display: inline-block;
+            width: 1em;
+            height: 1em;
+            border: 2px solid currentColor;
+            border-right-color: transparent;
+            border-radius: 50%;
+            animation: spin 0.75s linear infinite;
+        }
+        @keyframes spin { 100% { transform: rotate(360deg); } }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800 h-screen overflow-hidden flex flex-col">
+
+    <!-- Toast Container -->
+    <div id="toast-container" class="fixed top-5 right-5 z-50 flex flex-col gap-2"></div>
+
+    <!-- HEADER -->
+    <header class="bg-white border-b border-slate-200 shadow-sm z-20 flex-none">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+            <div class="flex items-center gap-2">
+                <div class="bg-indigo-600 text-white p-1.5 rounded-lg">
+                    <i class="fa-solid fa-shield-halved text-xl"></i>
+                </div>
+                <h1 class="text-xl font-bold text-slate-900 tracking-tight">Sentinel<span class="text-indigo-600">Exam</span></h1>
+            </div>
+            <div id="user-nav" class="hidden flex items-center gap-4">
+                <div class="flex flex-col items-end mr-2">
+                    <span id="user-display" class="text-sm font-bold text-slate-700 leading-tight"></span>
+                    <span id="user-role-badge" class="text-xs bg-indigo-100 text-indigo-700 px-2 py-0.5 rounded-full font-medium"></span>
+                </div>
+                <button onclick="app.logout()" class="text-slate-400 hover:text-red-600 transition">
+                    <i class="fa-solid fa-power-off text-lg"></i>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- MAIN CONTENT -->
+    <main class="flex-grow relative overflow-hidden">
+        
+        <!-- VIEW: AUTHENTICATION -->
+        <div id="view-auth" class="absolute inset-0 flex items-center justify-center bg-slate-50 p-4 overflow-y-auto">
+            <div class="w-full max-w-md bg-white rounded-2xl shadow-xl overflow-hidden border border-slate-100">
+                <div class="bg-indigo-600 p-6 text-center">
+                    <h2 class="text-2xl font-bold text-white mb-2">Welcome Back</h2>
+                    <p class="text-indigo-100 text-sm">Secure Examination & Proctoring Portal</p>
+                </div>
+                <div class="p-8">
+                    <div class="flex gap-2 mb-6 bg-slate-100 p-1 rounded-lg">
+                        <button onclick="app.setAuthMode('student')" id="btn-mode-student" class="flex-1 py-2 text-sm font-medium rounded-md transition bg-white text-indigo-600 shadow-sm">Student</button>
+                        <button onclick="app.setAuthMode('examiner')" id="btn-mode-examiner" class="flex-1 py-2 text-sm font-medium rounded-md transition text-slate-500 hover:text-slate-700">Examiner</button>
+                    </div>
+
+                    <form id="auth-form" onsubmit="app.handleAuth(event)" class="space-y-4">
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-500 uppercase mb-1">Email Address</label>
+                            <input type="email" id="auth-email" required class="w-full px-4 py-2.5 rounded-lg border border-slate-300 focus:ring-2 focus:ring-indigo-500 outline-none" placeholder="user@school.edu">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-500 uppercase mb-1">Password</label>
+                            <input type="password" id="auth-password" required class="w-full px-4 py-2.5 rounded-lg border border-slate-300 focus:ring-2 focus:ring-indigo-500 outline-none" placeholder="••••••••">
+                        </div>
+                        <button type="submit" id="btn-auth-submit" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 rounded-lg transition shadow-lg shadow-indigo-200">
+                            Sign In
+                        </button>
+                    </form>
+                    
+                    <p class="mt-4 text-center text-xs text-slate-400">
+                        Only pre-authorized accounts can sign in.
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- VIEW: EXAMINER DASHBOARD -->
+        <div id="view-examiner" class="hidden-view absolute inset-0 overflow-y-auto bg-slate-50 p-4 sm:p-8">
+            <div class="max-w-6xl mx-auto">
+                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 gap-4">
+                    <div>
+                        <h2 class="text-2xl font-bold text-slate-900">Teacher Dashboard</h2>
+                        <p class="text-slate-500">Manage exams and view student performance metrics.</p>
+                    </div>
+                    <div class="flex gap-3">
+                         <button onclick="app.showUserProvisioningModal()" class="bg-green-600 hover:bg-green-700 text-white px-5 py-2.5 rounded-lg font-medium shadow-md transition flex items-center gap-2">
+                            <i class="fa-solid fa-user-plus"></i> Add User
+                        </button>
+                        <button onclick="app.showCreateExamModal()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2.5 rounded-lg font-medium shadow-md transition flex items-center gap-2">
+                            <i class="fa-solid fa-plus"></i> Create Exam
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Stats Row (Visual only for demo) -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+                    <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm flex items-center gap-4">
+                        <div class="w-12 h-12 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center text-xl"><i class="fa-solid fa-layer-group"></i></div>
+                        <div><p class="text-sm text-slate-500">Total Exams</p><h3 id="stat-total-exams" class="text-xl font-bold">0</h3></div>
+                    </div>
+                    <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm flex items-center gap-4">
+                        <div class="w-12 h-12 rounded-full bg-green-100 text-green-600 flex items-center justify-center text-xl"><i class="fa-solid fa-users"></i></div>
+                        <div><p class="text-sm text-slate-500">Total Students</p><h3 class="text-xl font-bold">-</h3></div>
+                    </div>
+                    <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm flex items-center gap-4">
+                        <div class="w-12 h-12 rounded-full bg-purple-100 text-purple-600 flex items-center justify-center text-xl"><i class="fa-solid fa-graduation-cap"></i></div>
+                        <div><p class="text-sm text-slate-500">Avg. Score</p><h3 class="text-xl font-bold">-</h3></div>
+                    </div>
+                </div>
+
+                <!-- Exam List -->
+                <h3 class="font-bold text-lg text-slate-800 mb-4">Your Examinations</h3>
+                <div id="examiner-exam-list" class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                    <!-- Populated via JS -->
+                </div>
+            </div>
+        </div>
+
+        <!-- VIEW: RESULTS DASHBOARD (MODAL) -->
+        <div id="modal-results" class="hidden fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-sm flex items-center justify-center p-4">
+            <div class="bg-white w-full max-w-5xl rounded-xl shadow-2xl flex flex-col h-[85vh]">
+                <div class="p-6 border-b border-slate-100 flex justify-between items-center bg-slate-50 rounded-t-xl">
+                    <div>
+                        <h3 class="text-xl font-bold text-slate-900" id="results-modal-title">Exam Results</h3>
+                        <p class="text-sm text-slate-500" id="results-modal-subtitle">Physics 101</p>
+                    </div>
+                    <button onclick="app.hideResultsModal()" class="w-8 h-8 rounded-full bg-white hover:bg-slate-100 text-slate-400 hover:text-slate-600 flex items-center justify-center transition border border-slate-200">
+                        <i class="fa-solid fa-xmark"></i>
+                    </button>
+                </div>
+                
+                <div class="p-0 overflow-y-auto flex-grow">
+                    <table class="w-full text-left border-collapse">
+                        <thead class="bg-slate-50 sticky top-0 z-10 shadow-sm">
+                            <tr>
+                                <th class="p-4 text-xs font-bold text-slate-500 uppercase tracking-wider border-b border-slate-200">Student Name</th>
+                                <th class="p-4 text-xs font-bold text-slate-500 uppercase tracking-wider border-b border-slate-200 text-center">Score</th>
+                                <th class="p-4 text-xs font-bold text-slate-500 uppercase tracking-wider border-b border-slate-200 text-center">Trust Score</th>
+                                <th class="p-4 text-xs font-bold text-slate-500 uppercase tracking-wider border-b border-slate-200 text-center">Violations</th>
+                                <th class="p-4 text-xs font-bold text-slate-500 uppercase tracking-wider border-b border-slate-200 text-right">Submitted</th>
+                            </tr>
+                        </thead>
+                        <tbody id="results-table-body" class="divide-y divide-slate-100">
+                            <!-- Rows populated via JS -->
+                        </tbody>
+                    </table>
+                    
+                    <!-- Empty State -->
+                    <div id="results-empty-state" class="hidden flex flex-col items-center justify-center py-20 text-slate-400">
+                        <i class="fa-solid fa-clipboard-list text-4xl mb-3 opacity-20"></i>
+                        <p>No students have submitted this exam yet.</p>
+                    </div>
+                </div>
+                
+                <div class="p-4 border-t border-slate-100 bg-slate-50 rounded-b-xl flex justify-between items-center">
+                    <span class="text-xs text-slate-400">Trust Score < 50% indicates likely cheating.</span>
+                    <button onclick="app.hideResultsModal()" class="px-4 py-2 bg-white border border-slate-300 text-slate-700 font-medium rounded-lg hover:bg-slate-50 text-sm">Close</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- MODAL: USER PROVISIONING (EXAMINER ONLY) -->
+        <div id="modal-provision-user" class="hidden fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-sm flex items-center justify-center p-4">
+            <div class="bg-white w-full max-w-lg rounded-xl shadow-2xl flex flex-col">
+                <div class="p-6 border-b border-slate-100 flex justify-between items-center">
+                    <h3 class="text-xl font-bold text-slate-900">Add New System User</h3>
+                    <button onclick="app.hideUserProvisioningModal()" class="text-slate-400 hover:text-slate-600"><i class="fa-solid fa-xmark text-xl"></i></button>
+                </div>
+                <div class="p-6">
+                    <p class="text-sm text-slate-600 mb-4">Create a new account for a student or another examiner. This user will use this email and password to sign in.</p>
+                    <form id="provision-user-form" onsubmit="app.provisionNewUser(event)" class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-medium text-slate-700 mb-1">Email</label>
+                            <input type="email" id="provision-email" required class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-green-500" placeholder="new.user@school.edu">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-slate-700 mb-1">Temporary Password (Min 6 chars)</label>
+                            <input type="password" id="provision-password" required minlength="6" class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-green-500" placeholder="******">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-slate-700 mb-1">Role</label>
+                            <select id="provision-role" required class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-green-500">
+                                <option value="student">Student</option>
+                                <option value="examiner">Examiner</option>
+                            </select>
+                        </div>
+                        <button type="submit" class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 rounded-lg transition shadow-md">
+                            Create Account
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- VIEW: STUDENT DASHBOARD -->
+        <div id="view-student" class="hidden-view absolute inset-0 overflow-y-auto bg-slate-50 p-4 flex items-center justify-center">
+            <div class="w-full max-w-lg">
+                <div class="bg-white rounded-2xl shadow-xl border border-slate-200 overflow-hidden mb-6">
+                    <div class="p-6 border-b border-slate-100">
+                        <h2 class="text-xl font-bold text-slate-900">Join an Examination</h2>
+                        <p class="text-sm text-slate-500 mt-1">Enter the access code provided by your examiner.</p>
+                    </div>
+                    <div class="p-6 space-y-4">
+                        <div>
+                            <label class="block text-sm font-medium text-slate-700 mb-1">Access Code</label>
+                            <div class="relative">
+                                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                    <i class="fa-solid fa-key text-slate-400"></i>
+                                </div>
+                                <input type="text" id="exam-access-code" class="pl-10 block w-full rounded-lg border-slate-300 border px-4 py-3 focus:ring-indigo-500 focus:border-indigo-500 uppercase tracking-widest font-mono" placeholder="EX-12345">
+                            </div>
+                        </div>
+                        <button onclick="app.joinExam()" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 rounded-lg transition shadow-md">
+                            Verify & Start Setup
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- VIEW: EXAM SETUP & ACTIVE EXAM -->
+        <!-- Setup View -->
+        <div id="view-exam-setup" class="hidden-view absolute inset-0 z-30 bg-white flex flex-col">
+            <div class="max-w-3xl mx-auto w-full flex-grow flex flex-col justify-center p-6">
+                <div class="text-center mb-8">
+                    <div class="w-16 h-16 bg-indigo-100 text-indigo-600 rounded-full flex items-center justify-center mx-auto mb-4 text-2xl"><i class="fa-solid fa-video"></i></div>
+                    <h2 class="text-3xl font-bold text-slate-900 mb-2">Proctoring Setup</h2>
+                    <p class="text-slate-600 max-w-md mx-auto">This exam is monitored. Please enable your camera.</p>
+                </div>
+                <div class="bg-black rounded-xl overflow-hidden relative flex items-center justify-center aspect-video max-w-md mx-auto mb-8">
+                    <video id="setup-video" autoplay muted playsinline class="w-full h-full object-cover absolute inset-0"></video>
+                    <div id="camera-placeholder" class="z-10 text-white text-center"><i class="fa-solid fa-camera-rotate text-3xl mb-2"></i><p class="text-sm opacity-80">Waiting for camera...</p></div>
+                </div>
+                <button id="btn-start-exam" onclick="app.startProctoredExam()" disabled class="w-full max-w-md mx-auto bg-slate-300 text-slate-500 font-bold py-4 rounded-xl transition cursor-not-allowed">Enable Camera to Continue</button>
+            </div>
+        </div>
+
+        <!-- Active Exam View -->
+        <div id="view-active-exam" class="hidden-view absolute inset-0 bg-white z-40 flex flex-col no-select">
+            <div class="h-16 bg-indigo-900 text-white flex items-center justify-between px-6 shadow-md flex-none">
+                <div><h2 id="exam-title-display" class="font-bold text-lg">Exam</h2><span class="text-indigo-300 text-xs">Candidate: <span id="exam-candidate-name"></span></span></div>
+                <div class="flex items-center gap-6">
+                    <div class="flex flex-col items-end"><span class="text-xs text-indigo-300 uppercase font-semibold">Time</span><span id="exam-timer" class="font-mono text-xl font-bold text-white">00:00:00</span></div>
+                    <button onclick="app.submitExam()" class="bg-red-600 hover:bg-red-700 px-4 py-2 rounded text-sm font-bold transition">Finish</button>
+                </div>
+            </div>
+            <div class="flex-grow flex overflow-hidden">
+                <div class="flex-grow overflow-y-auto p-8 bg-slate-50 relative">
+                    <div id="violation-overlay" class="hidden absolute inset-0 bg-red-500/90 z-50 flex items-center justify-center flex-col text-white p-8 text-center backdrop-blur-sm">
+                        <i class="fa-solid fa-triangle-exclamation text-6xl mb-4 animate-bounce"></i>
+                        <h2 class="text-4xl font-bold mb-2">VIOLATION DETECTED</h2>
+                        <p class="text-xl max-w-xl mx-auto mb-6">Tab switching detected. This incident has been logged.</p>
+                        <button onclick="app.dismissViolation()" class="bg-white text-red-600 px-8 py-3 rounded-full font-bold hover:bg-red-50 transition">Return to Exam</button>
+                    </div>
+                    <div class="max-w-3xl mx-auto" id="questions-container"></div>
+                </div>
+                <div class="w-72 bg-white border-l border-slate-200 flex flex-col flex-none shadow-lg">
+                    <div class="p-4 border-b border-slate-200 bg-slate-50">
+                        <div class="aspect-video bg-black rounded-lg overflow-hidden relative shadow-inner border border-slate-300"><video id="proctor-video" autoplay muted playsinline class="w-full h-full object-cover"></video></div>
+                        <div class="mt-2 flex justify-between text-xs"><span class="text-slate-500">Trust Score:</span><span id="trust-score-display" class="font-bold text-green-600">100%</span></div>
+                    </div>
+                    <div class="flex-grow overflow-y-auto p-4"><div id="question-nav-grid" class="grid grid-cols-4 gap-2"></div></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- MODAL: CREATE EXAM -->
+        <div id="modal-create-exam" class="hidden fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-sm flex items-center justify-center p-4">
+            <div class="bg-white w-full max-w-2xl rounded-xl shadow-2xl flex flex-col max-h-[90vh]">
+                <div class="p-6 border-b border-slate-100 flex justify-between items-center">
+                    <h3 class="text-xl font-bold text-slate-900">Create New Examination</h3>
+                    <button onclick="app.hideCreateExamModal()" class="text-slate-400 hover:text-slate-600"><i class="fa-solid fa-xmark text-xl"></i></button>
+                </div>
+                <div class="p-6 overflow-y-auto flex-grow">
+                    <div class="bg-gradient-to-br from-indigo-50 to-blue-50 p-4 rounded-xl border border-indigo-100 mb-6">
+                        <label class="block text-xs font-bold text-indigo-700 uppercase mb-2"><i class="fa-solid fa-wand-magic-sparkles"></i> Gemini AI Generator</label>
+                        <div class="flex gap-2">
+                            <input type="text" id="ai-topic-input" class="flex-grow px-3 py-2 text-sm border border-indigo-200 rounded-lg focus:ring-2 focus:ring-indigo-500" placeholder="Enter topic (e.g., 'Calculus II', 'WW2 History')">
+                            <button type="button" onclick="app.generateQuestionsWithAI()" id="btn-ai-generate" class="bg-indigo-600 text-white text-sm px-4 py-2 rounded-lg font-medium hover:bg-indigo-700 transition shadow-sm flex items-center gap-2 whitespace-nowrap">Generate ✨</button>
+                        </div>
+                    </div>
+                    <form id="create-exam-form" class="space-y-4">
+                        <div class="grid grid-cols-2 gap-4">
+                            <div class="col-span-2"><label class="block text-sm font-medium text-slate-700 mb-1">Exam Title</label><input type="text" id="new-exam-title" required class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500" placeholder="Exam Title"></div>
+                            <div><label class="block text-sm font-medium text-slate-700 mb-1">Duration (Mins)</label><input type="number" id="new-exam-duration" required min="1" class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500" placeholder="60"></div>
+                            <div><label class="block text-sm font-medium text-slate-700 mb-1">Access Code</label><input type="text" id="new-exam-code" required class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 uppercase" placeholder="CODE"></div>
+                        </div>
+                        <div><label class="block text-sm font-medium text-slate-700 mb-1">JSON Questions</label><textarea id="new-exam-questions" required class="w-full h-32 px-3 py-2 border border-slate-300 rounded-lg font-mono text-xs focus:ring-2 focus:ring-indigo-500"></textarea></div>
+                    </form>
+                </div>
+                <div class="p-6 border-t border-slate-100 bg-slate-50 rounded-b-xl flex justify-end gap-3">
+                    <button onclick="app.hideCreateExamModal()" class="px-4 py-2 text-slate-600 font-medium hover:bg-slate-200 rounded-lg transition">Cancel</button>
+                    <button onclick="app.saveNewExam()" class="px-4 py-2 bg-indigo-600 text-white font-medium rounded-lg hover:bg-indigo-700 transition shadow-sm">Publish Exam</button>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- SCRIPTS -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
+        // Import only necessary Auth functions: signInWithEmailAndPassword and createUserWithEmailAndPassword for the Examiner-only provisioning.
+        import { getAuth, onAuthStateChanged, signOut, updateProfile, signInWithEmailAndPassword, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-auth.js";
+        import { getFirestore, collection, addDoc, query, where, getDocs, doc, getDoc, serverTimestamp, setDoc } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
+
+        // --- CONFIGURATION START ---
+        // Your Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyA5dnfD6o9UdaCAdA58ruaatPuFGW-cyZQ",
+            authDomain: "testadege.firebaseapp.com",
+            databaseURL: "https://testadege-default-rtdb.firebaseio.com",
+            projectId: "testadege",
+            storageBucket: "testadege.firebasestorage.app",
+            messagingSenderId: "509681276651",
+            appId: "1:509681276651:web:2e52639f1bddee5d1210ae",
+            measurementId: "G-52PZWM8XDK"
+        };
+        // --- CONFIGURATION END ---
+        
+        const apiKey = ""; // For Gemini API (separate from Firebase)
+
+        // INIT
+        const firebaseApp = initializeApp(firebaseConfig);
+        const auth = getAuth(firebaseApp);
+        const db = getFirestore(firebaseApp);
+
+        class ExamSystem {
+            constructor() {
+                this.user = null;
+                this.userRole = 'student';
+                this.currentExam = null;
+                this.examAnswers = {};
+                this.violations = 0;
+                this.trustScore = 100;
+                this.timerInterval = null;
+                this.stream = null;
+                // Initialization is now handled by the DOMContentLoaded listener below
+            }
+
+            async init() {
+                onAuthStateChanged(auth, (user) => {
+                    this.user = user;
+                    if (user) {
+                        // Check Firestore for actual role if needed, but for simplicity, rely on localStorage and initial login role
+                        const savedRole = localStorage.getItem('sentinel_role');
+                        if (savedRole) this.userRole = savedRole;
+                        
+                        this.updateUIAuth();
+                    } else {
+                        this.showView('view-auth');
+                        document.getElementById('user-nav').classList.add('hidden');
+                    }
+                });
+                this.setupProctoringEvents();
+            }
+
+            // --- AUTH & USER DATABASE ---
+            setAuthMode(mode) {
+                this.userRole = mode;
+                const btnStudent = document.getElementById('btn-mode-student');
+                const btnExaminer = document.getElementById('btn-mode-examiner');
+                const btnSubmit = document.getElementById('btn-auth-submit');
+                
+                if(mode === 'student') {
+                    btnStudent.className = "flex-1 py-2 text-sm font-medium rounded-md transition bg-white text-indigo-600 shadow-sm";
+                    btnExaminer.className = "flex-1 py-2 text-sm font-medium rounded-md transition text-slate-500 hover:text-slate-700";
+                    btnSubmit.innerText = "Sign In";
+                } else {
+                    btnExaminer.className = "flex-1 py-2 text-sm font-medium rounded-md transition bg-white text-indigo-600 shadow-sm";
+                    btnStudent.className = "flex-1 py-2 text-sm font-medium rounded-md transition text-slate-500 hover:text-slate-700";
+                    btnSubmit.innerText = "Sign In";
+                }
+            }
+
+            async handleAuth(e) {
+                e.preventDefault();
+                const email = document.getElementById('auth-email').value;
+                const pass = document.getElementById('auth-password').value;
+                
+                try {
+                    // Attempt to sign in. SIGN UP IS REMOVED HERE.
+                    const userCredential = await signInWithEmailAndPassword(auth, email, pass);
+                    
+                    // Final success steps after successful sign-in
+                    localStorage.setItem('sentinel_role', this.userRole);
+                    this.showToast("Signed in successfully!", 'success');
+                    
+                    // Update profile/role info on sign-in
+                    await this.saveUserProfile(userCredential.user.uid, email, this.userRole);
+
+                } catch (error) { 
+                    let message = "Authentication failed.";
+                    if (error.code) {
+                        if (error.code === 'auth/user-not-found' || error.code === 'auth/wrong-password') {
+                            message = "Invalid email or password. Only pre-authorized users can sign in.";
+                        } else if (error.code === 'auth/invalid-email') {
+                            message = "Invalid email format.";
+                        } else {
+                            message = error.message.replace('Firebase: ', '');
+                        }
+                    }
+                    console.error(error);
+                    this.showToast(message, 'error'); 
+                }
+            }
+
+            // FEATURE: Examiner provisioning of new users
+            async provisionNewUser(e) {
+                e.preventDefault();
+                const email = document.getElementById('provision-email').value;
+                const pass = document.getElementById('provision-password').value;
+                const role = document.getElementById('provision-role').value;
+                
+                try {
+                    // 1. Create user account in Firebase Auth
+                    const userCredential = await createUserWithEmailAndPassword(auth, email, pass);
+                    const newUser = userCredential.user;
+                    
+                    // 2. Set display name and store user profile in Firestore
+                    await updateProfile(newUser, { displayName: email.split('@')[0] });
+                    await this.saveUserProfile(newUser.uid, email, role);
+                    
+                    this.showToast(`User ${newUser.displayName} (${role}) provisioned!`, 'success');
+                    this.hideUserProvisioningModal();
+                    
+                    // Log out the current Examiner so they can re-login if needed
+                    // NOTE: This logs the EXAMINER out for security/clarity after they create a new account.
+                    // await signOut(auth); 
+                    // this.showToast('You have been logged out. Please sign in again.', 'info');
+
+                } catch (error) {
+                    let message = "Failed to create account.";
+                    if (error.code === 'auth/email-already-in-use') {
+                        message = "Account already exists. Please use the existing credentials.";
+                    } else if (error.code === 'auth/weak-password') {
+                        message = "Password must be at least 6 characters.";
+                    } else {
+                        message = error.message.replace('Firebase: ', '');
+                    }
+                    console.error(error);
+                    this.showToast(message, 'error');
+                }
+            }
+
+            async saveUserProfile(uid, email, role) {
+                const userRef = doc(db, 'users', uid);
+                await setDoc(userRef, {
+                    uid: uid,
+                    email: email,
+                    displayName: email.split('@')[0],
+                    role: role,
+                    lastLogin: serverTimestamp()
+                }, { merge: true });
+            }
+
+            logout() { signOut(auth); window.location.reload(); }
+
+            updateUIAuth() {
+                document.getElementById('user-nav').classList.remove('hidden');
+                document.getElementById('user-display').innerText = this.user.displayName;
+                document.getElementById('user-role-badge').innerText = this.userRole.toUpperCase();
+
+                if (this.userRole === 'examiner') {
+                    this.showView('view-examiner');
+                    this.loadExaminerExams();
+                } else {
+                    this.showView('view-student');
+                }
+            }
+
+            // --- AI TOOLS ---
+            async callGeminiAPI(prompt) {
+                 try {
+                    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`;
+                    const response = await fetch(url, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
+                    });
+                    const data = await response.json();
+                    return data.candidates?.[0]?.content?.parts?.[0]?.text || "";
+                } catch (e) { console.error(e); return ""; }
+            }
+
+            async generateQuestionsWithAI() {
+                const topic = document.getElementById('ai-topic-input').value;
+                const btn = document.getElementById('btn-ai-generate');
+                if (!topic) return this.showToast('Enter a topic', 'error');
+
+                const original = btn.innerHTML;
+                btn.innerHTML = `<span class="ai-loading"></span>`;
+                btn.disabled = true;
+
+                try {
+                    const prompt = `Generate 5 exam questions about "${topic}" as a raw JSON array (no markdown) with format: [{"id": 1, "text": "Q?", "options": ["A","B"], "correct": 0}]`;
+                    let text = await this.callGeminiAPI(prompt);
+                    text = text.replace(/```json/g, '').replace(/```/g, '').trim();
+                    document.getElementById('new-exam-questions').value = text;
+                    this.showToast('Questions generated!', 'success');
+                } catch (e) { this.showToast('AI Error', 'error'); } 
+                finally { btn.innerHTML = original; btn.disabled = false; }
+            }
+
+            // --- EXAMINER FUNCTIONS ---
+            async saveNewExam() {
+                const title = document.getElementById('new-exam-title').value;
+                const duration = parseInt(document.getElementById('new-exam-duration').value);
+                const code = document.getElementById('new-exam-code').value.toUpperCase();
+                const questionsRaw = document.getElementById('new-exam-questions').value;
+
+                try {
+                    const questions = JSON.parse(questionsRaw);
+                    // Simplified Path: root 'exams' collection
+                    const examRef = collection(db, 'exams');
+                    await addDoc(examRef, { title, duration, code, questions, creatorId: this.user.uid, createdAt: serverTimestamp() });
+                    this.showToast('Exam Published', 'success');
+                    this.hideCreateExamModal();
+                    this.loadExaminerExams();
+                } catch (e) { this.showToast('Invalid Data', 'error'); }
+            }
+
+            async loadExaminerExams() {
+                const list = document.getElementById('examiner-exam-list');
+                list.innerHTML = '<div class="col-span-full text-center"><span class="ai-loading text-indigo-600"></span></div>';
+
+                // Simplified Path: root 'exams' collection
+                const q = query(collection(db, 'exams'), where('creatorId', '==', this.user.uid));
+                const snapshot = await getDocs(q);
+                list.innerHTML = '';
+                document.getElementById('stat-total-exams').innerText = snapshot.size;
+
+                snapshot.forEach(doc => {
+                    const data = doc.data();
+                    const el = document.createElement('div');
+                    el.className = "bg-white p-6 rounded-xl border border-slate-200 shadow-sm hover:shadow-md transition flex flex-col justify-between";
+                    el.innerHTML = `
+                        <div>
+                            <div class="flex justify-between items-start mb-4">
+                                <div class="h-10 w-10 rounded-lg bg-indigo-50 flex items-center justify-center text-indigo-600 font-bold"><i class="fa-solid fa-file-contract"></i></div>
+                                <span class="bg-slate-100 text-slate-600 text-xs font-bold px-2 py-1 rounded uppercase tracking-wide">${data.code}</span>
+                            </div>
+                            <h3 class="font-bold text-lg text-slate-900 leading-tight mb-1">${data.title}</h3>
+                            <p class="text-sm text-slate-500">${data.questions.length} Questions • ${data.duration} mins</p>
+                        </div>
+                        <div class="pt-4 mt-4 border-t border-slate-100">
+                            <button class="w-full py-2 bg-white border border-slate-200 hover:border-indigo-500 hover:text-indigo-600 text-slate-600 rounded-lg text-sm font-bold transition flex items-center justify-center gap-2 btn-view-results">
+                                <i class="fa-solid fa-chart-pie"></i> View Results
+                            </button>
+                        </div>
+                    `;
+                    el.querySelector('.btn-view-results').onclick = () => this.viewExamResults(doc.id, data.title);
+                    list.appendChild(el);
+                });
+            }
+
+            // --- FEATURE: TEACHER DASHBOARD RESULTS ---
+            async viewExamResults(examId, examTitle) {
+                const modal = document.getElementById('modal-results');
+                const tbody = document.getElementById('results-table-body');
+                const empty = document.getElementById('results-empty-state');
+                
+                document.getElementById('results-modal-title').innerText = "Results: " + examTitle;
+                document.getElementById('results-modal-subtitle').innerText = "ID: " + examId;
+                
+                tbody.innerHTML = '<tr><td colspan="5" class="text-center p-8"><span class="ai-loading text-indigo-600"></span> Loading data...</td></tr>';
+                modal.classList.remove('hidden');
+
+                try {
+                    // Simplified Path: root 'results' collection
+                    const resultsRef = collection(db, 'results');
+                    const snapshot = await getDocs(resultsRef);
+                    
+                    const examResults = [];
+                    snapshot.forEach(doc => {
+                        const r = doc.data();
+                        if (r.examId === examId) examResults.push(r);
+                    });
+
+                    examResults.sort((a, b) => b.score - a.score);
+
+                    tbody.innerHTML = '';
+                    if (examResults.length === 0) {
+                        empty.classList.remove('hidden');
+                    } else {
+                        empty.classList.add('hidden');
+                        examResults.forEach(r => {
+                            const row = document.createElement('tr');
+                            const trustColor = r.trustScore > 80 ? 'text-green-600' : r.trustScore > 50 ? 'text-yellow-600' : 'text-red-600 font-bold';
+                            const rowBg = r.trustScore < 50 ? 'bg-red-50' : 'hover:bg-slate-50';
+                            
+                            const date = r.submittedAt ? new Date(r.submittedAt.seconds * 1000).toLocaleDateString() : 'N/A';
+
+                            row.className = `transition border-b border-slate-100 ${rowBg}`;
+                            row.innerHTML = `
+                                <td class="p-4">
+                                    <div class="flex items-center gap-3">
+                                        <div class="w-8 h-8 rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center text-xs font-bold">
+                                            ${r.studentName.charAt(0).toUpperCase()}
+                                        </div>
+                                        <div class="font-medium text-slate-900">${r.studentName}</div>
+                                    </div>
+                                </td>
+                                <td class="p-4 text-center font-mono font-bold text-slate-700">${r.score}%</td>
+                                <td class="p-4 text-center ${trustColor}">${r.trustScore}%</td>
+                                <td class="p-4 text-center text-slate-500">${r.violations}</td>
+                                <td class="p-4 text-right text-xs text-slate-400 font-mono">${date}</td>
+                            `;
+                            tbody.appendChild(row);
+                        });
+                    }
+                } catch (e) {
+                    console.error(e);
+                    this.showToast('Error loading results', 'error');
+                }
+            }
+
+            hideResultsModal() { document.getElementById('modal-results').classList.add('hidden'); }
+
+            // --- STUDENT EXAM LOGIC ---
+            async joinExam() {
+                const code = document.getElementById('exam-access-code').value.toUpperCase().trim();
+                if (!code) return this.showToast('Enter code', 'error');
+
+                // Simplified Path: root 'exams' collection
+                const examsRef = collection(db, 'exams');
+                const snapshot = await getDocs(examsRef);
+                let found = null;
+                snapshot.forEach(doc => { if(doc.data().code === code) found = {id: doc.id, ...doc.data()}; });
+
+                if(found) {
+                    this.currentExam = found;
+                    this.showView('view-exam-setup');
+                    this.initCamera();
+                } else {
+                    this.showToast('Invalid Code', 'error');
+                }
+            }
+
+            async initCamera() {
+                try {
+                    this.stream = await navigator.mediaDevices.getUserMedia({ video: true });
+                    document.getElementById('setup-video').srcObject = this.stream;
+                    document.getElementById('camera-placeholder').classList.add('hidden');
+                    const btn = document.getElementById('btn-start-exam');
+                    btn.disabled = false;
+                    btn.className = "w-full max-w-md mx-auto bg-indigo-600 text-white hover:bg-indigo-700 font-bold py-4 rounded-xl transition shadow-lg";
+                    btn.innerText = "Start Exam";
+                } catch (e) { this.showToast('Camera Denied', 'error'); }
+            }
+
+            startProctoredExam() {
+                document.documentElement.requestFullscreen().catch(()=>{});
+                document.getElementById('proctor-video').srcObject = this.stream;
+                this.showView('view-active-exam');
+                document.getElementById('exam-title-display').innerText = this.currentExam.title;
+                document.getElementById('exam-candidate-name').innerText = this.user.displayName;
+                
+                const container = document.getElementById('questions-container');
+                const nav = document.getElementById('question-nav-grid');
+                container.innerHTML = ''; nav.innerHTML = '';
+
+                this.currentExam.questions.forEach((q, i) => {
+                    container.innerHTML += `
+                        <div id="q-${i}" class="bg-white p-6 rounded-xl border border-slate-200 mb-4 shadow-sm">
+                            <div class="flex gap-3 mb-4"><span class="font-bold text-slate-400">#${i+1}</span> <p class="font-medium text-lg">${q.text}</p></div>
+                            <div class="space-y-2 pl-8">
+                                ${q.options.map((opt, oi) => `
+                                    <label class="flex items-center gap-3 p-3 border rounded hover:bg-slate-50 cursor-pointer">
+                                        <input type="radio" name="q_${i}" value="${oi}" onchange="app.answer(${i},${oi})" class="text-indigo-600">
+                                        <span>${opt}</span>
+                                    </label>
+                                `).join('')}
+                            </div>
+                        </div>`;
+                    const btn = document.createElement('button');
+                    btn.className = "h-8 border rounded text-xs font-bold text-slate-500 hover:bg-slate-100";
+                    btn.innerText = i+1;
+                    btn.onclick = () => document.getElementById(`q-${i}`).scrollIntoView({behavior:'smooth'});
+                    nav.appendChild(btn);
+                });
+
+                this.startTimer(this.currentExam.duration);
+            }
+
+            answer(qIdx, optIdx) { this.examAnswers[qIdx] = optIdx; }
+
+            startTimer(mins) {
+                let sec = mins * 60;
+                const disp = document.getElementById('exam-timer');
+                this.timerInterval = setInterval(() => {
+                    sec--;
+                    const m = Math.floor(sec / 60), s = sec % 60;
+                    disp.innerText = `${m}:${s<10?'0'+s:s}`;
+                    if(sec <= 0) this.submitExam(true);
+                }, 1000);
+            }
+
+            setupProctoringEvents() {
+                document.addEventListener("visibilitychange", () => { if(document.hidden && this.currentExam) this.logViolation(); });
+                window.addEventListener("blur", () => { if(this.currentExam) this.logViolation(); });
+                document.addEventListener('contextmenu', e => e.preventDefault());
+            }
+
+            logViolation() {
+                const ov = document.getElementById('violation-overlay');
+                if(!ov.classList.contains('hidden')) return;
+                this.violations++;
+                this.trustScore = Math.max(0, 100 - (this.violations * 15));
+                document.getElementById('trust-score-display').innerText = this.trustScore + '%';
+                ov.classList.remove('hidden');
+            }
+            
+            dismissViolation() {
+                document.getElementById('violation-overlay').classList.add('hidden');
+                if(!document.fullscreenElement) document.documentElement.requestFullscreen().catch(()=>{});
+            }
+
+            async submitExam(force=false) {
+                if(!force && !confirm('Finish Exam?')) return;
+                clearInterval(this.timerInterval);
+                if(this.stream) this.stream.getTracks().forEach(t=>t.stop());
+                document.exitFullscreen().catch(()=>{});
+
+                let score = 0;
+                this.currentExam.questions.forEach((q,i) => { if(this.examAnswers[i] === q.correct) score++; });
+                const pct = Math.round((score / this.currentExam.questions.length) * 100);
+
+                // Simplified Path: root 'results' collection
+                await addDoc(collection(db, 'results'), {
+                    examId: this.currentExam.id,
+                    examTitle: this.currentExam.title,
+                    studentName: this.user.displayName,
+                    studentId: this.user.uid,
+                    score: pct,
+                    trustScore: this.trustScore,
+                    violations: this.violations,
+                    submittedAt: serverTimestamp()
+                });
+
+                this.currentExam = null;
+                this.showToast('Submitted!', 'success');
+                setTimeout(() => window.location.reload(), 1500);
+            }
+
+            // UTILS
+            showView(id) {
+                ['view-auth', 'view-examiner', 'view-student', 'view-exam-setup', 'view-active-exam'].forEach(v => document.getElementById(v).classList.add('hidden-view'));
+                document.getElementById(id).classList.remove('hidden-view');
+            }
+            showToast(msg, type) {
+                const t = document.createElement('div');
+                t.className = `${type==='success'?'bg-green-600':'bg-slate-800'} text-white px-4 py-3 rounded shadow-lg text-sm font-bold mb-2`;
+                t.innerText = msg;
+                document.getElementById('toast-container').appendChild(t);
+                setTimeout(() => t.remove(), 3000);
+            }
+            showCreateExamModal() { document.getElementById('modal-create-exam').classList.remove('hidden'); }
+            hideCreateExamModal() { document.getElementById('modal-create-exam').classList.add('hidden'); }
+            showUserProvisioningModal() { document.getElementById('modal-provision-user').classList.remove('hidden'); }
+            hideUserProvisioningModal() { document.getElementById('modal-provision-user').classList.add('hidden'); }
+        }
+
+        // --- PRIMARY FIX: Ensure the app instance is created after the DOM is ready ---
+        document.addEventListener('DOMContentLoaded', () => {
+            window.app = new ExamSystem();
+            window.app.init(); // Manually call init since it was removed from the constructor
+        });
+        // --- FIX END ---
+    </script>
+</body>
+</html>
