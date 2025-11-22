@@ -1,0 +1,835 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sentinel | Proctored Exam System</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #f1f1f1; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+
+        .hidden-view { display: none !important; }
+        
+        /* Camera Mirror */
+        #webcam-feed { transform: scaleX(-1); object-fit: cover; }
+        
+        .recording-dot { animation: pulse-red 2s infinite; }
+        @keyframes pulse-red {
+            0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); }
+            70% { box-shadow: 0 0 0 10px rgba(239, 68, 68, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+        }
+
+        .no-select { user-select: none; }
+
+        .ai-loading {
+            display: inline-block;
+            width: 1em;
+            height: 1em;
+            border: 2px solid currentColor;
+            border-right-color: transparent;
+            border-radius: 50%;
+            animation: spin 0.75s linear infinite;
+        }
+        @keyframes spin { 100% { transform: rotate(360deg); } }
+
+        /* Palette Colors */
+        .pal-unvisited { background-color: #e2e8f0; color: #64748b; } 
+        .pal-answered { background-color: #22c55e; color: white; border-color: #16a34a; }
+        .pal-visited-unanswered { background-color: #ef4444; color: white; border-color: #dc2626; }
+        .pal-review-unanswered { background-color: #eab308; color: white; border-color: #ca8a04; }
+        .pal-review-answered { background-color: #3b82f6; color: white; border-color: #2563eb; }
+
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800 h-screen overflow-hidden flex flex-col">
+
+    <div id="toast-container" class="fixed top-5 right-5 z-50 flex flex-col gap-2"></div>
+
+    <!-- HEADER -->
+    <header class="bg-white border-b border-slate-200 shadow-sm z-20 flex-none">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+            <div class="flex items-center gap-2">
+                <div class="bg-indigo-600 text-white p-1.5 rounded-lg">
+                    <i class="fa-solid fa-shield-halved text-xl"></i>
+                </div>
+                <h1 class="text-xl font-bold text-slate-900 tracking-tight">Sentinel<span class="text-indigo-600">Exam</span></h1>
+            </div>
+            <div id="user-nav" class="hidden flex items-center gap-4">
+                <div class="flex flex-col items-end mr-2">
+                    <span id="user-display" class="text-sm font-bold text-slate-700 leading-tight"></span>
+                    <span id="user-role-badge" class="text-xs bg-indigo-100 text-indigo-700 px-2 py-0.5 rounded-full font-medium"></span>
+                </div>
+                <button onclick="app.logout()" class="text-slate-400 hover:text-red-600 transition">
+                    <i class="fa-solid fa-power-off text-lg"></i>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- MAIN CONTENT -->
+    <main class="flex-grow relative overflow-hidden">
+        
+        <!-- VIEW: AUTHENTICATION -->
+        <div id="view-auth" class="absolute inset-0 flex items-center justify-center bg-slate-50 p-4 overflow-y-auto">
+            <div class="w-full max-w-md bg-white rounded-2xl shadow-xl overflow-hidden border border-slate-100">
+                <div class="bg-indigo-600 p-6 text-center">
+                    <h2 class="text-2xl font-bold text-white mb-2">Welcome Back</h2>
+                    <p class="text-indigo-100 text-sm">Secure Examination & Proctoring Portal</p>
+                </div>
+                <div class="p-8">
+                    <div class="flex gap-2 mb-6 bg-slate-100 p-1 rounded-lg">
+                        <button onclick="app.setAuthMode('student')" id="btn-mode-student" class="flex-1 py-2 text-sm font-medium rounded-md transition bg-white text-indigo-600 shadow-sm">Student</button>
+                        <button onclick="app.setAuthMode('examiner')" id="btn-mode-examiner" class="flex-1 py-2 text-sm font-medium rounded-md transition text-slate-500 hover:text-slate-700">Examiner</button>
+                    </div>
+                    <form id="auth-form" onsubmit="app.handleAuth(event)" class="space-y-4">
+                        <div><label class="block text-xs font-semibold text-slate-500 uppercase mb-1">Email</label><input type="email" id="auth-email" required class="w-full px-4 py-2.5 rounded-lg border border-slate-300 focus:ring-2 focus:ring-indigo-500 outline-none" placeholder="user@school.edu"></div>
+                        <div><label class="block text-xs font-semibold text-slate-500 uppercase mb-1">Password</label><input type="password" id="auth-password" required class="w-full px-4 py-2.5 rounded-lg border border-slate-300 focus:ring-2 focus:ring-indigo-500 outline-none" placeholder="••••••••"></div>
+                        <button type="submit" id="btn-auth-submit" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 rounded-lg transition shadow-lg shadow-indigo-200">Sign In</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- VIEW: EXAMINER DASHBOARD -->
+        <div id="view-examiner" class="hidden-view absolute inset-0 overflow-y-auto bg-slate-50 p-4 sm:p-8">
+            <div class="max-w-6xl mx-auto">
+                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 gap-4">
+                    <div><h2 class="text-2xl font-bold text-slate-900">Teacher Dashboard</h2><p class="text-slate-500">Manage exams and view student performance metrics.</p></div>
+                    <div class="flex gap-3">
+                         <button onclick="app.showUserProvisioningModal()" class="bg-green-600 hover:bg-green-700 text-white px-5 py-2.5 rounded-lg font-medium shadow-md transition flex items-center gap-2"><i class="fa-solid fa-users-gear"></i> Manage Users</button>
+                        <button onclick="app.showCreateExamModal()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2.5 rounded-lg font-medium shadow-md transition flex items-center gap-2"><i class="fa-solid fa-plus"></i> Create Exam</button>
+                    </div>
+                </div>
+                <!-- Stats Row with IDs for Update -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+                    <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm flex items-center gap-4">
+                        <div class="w-12 h-12 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center text-xl"><i class="fa-solid fa-layer-group"></i></div>
+                        <div><p class="text-sm text-slate-500">Total Exams</p><h3 id="stat-total-exams" class="text-xl font-bold">0</h3></div>
+                    </div>
+                    <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm flex items-center gap-4">
+                        <div class="w-12 h-12 rounded-full bg-green-100 text-green-600 flex items-center justify-center text-xl"><i class="fa-solid fa-users"></i></div>
+                        <div><p class="text-sm text-slate-500">Total Students</p><h3 id="stat-total-students" class="text-xl font-bold">-</h3></div>
+                    </div>
+                    <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm flex items-center gap-4">
+                        <div class="w-12 h-12 rounded-full bg-purple-100 text-purple-600 flex items-center justify-center text-xl"><i class="fa-solid fa-graduation-cap"></i></div>
+                        <div><p class="text-sm text-slate-500">Avg. Score</p><h3 id="stat-avg-score" class="text-xl font-bold">-</h3></div>
+                    </div>
+                </div>
+                <h3 class="font-bold text-lg text-slate-800 mb-4">Your Examinations</h3>
+                <div id="examiner-exam-list" class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3"></div>
+            </div>
+        </div>
+
+        <!-- VIEW: RESULTS DASHBOARD -->
+        <div id="modal-results" class="hidden fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-sm flex items-center justify-center p-4">
+            <div class="bg-white w-full max-w-5xl rounded-xl shadow-2xl flex flex-col h-[85vh]">
+                <div class="p-6 border-b border-slate-100 flex justify-between items-center bg-slate-50 rounded-t-xl">
+                    <div><h3 class="text-xl font-bold text-slate-900" id="results-modal-title">Exam Results</h3><p class="text-sm text-slate-500" id="results-modal-subtitle">Physics 101</p></div>
+                    <button onclick="app.hideResultsModal()" class="text-slate-400 hover:text-slate-600"><i class="fa-solid fa-xmark text-xl"></i></button>
+                </div>
+                <div class="p-0 overflow-y-auto flex-grow">
+                    <table class="w-full text-left border-collapse">
+                        <thead class="bg-slate-50 sticky top-0 z-10 shadow-sm">
+                            <tr>
+                                <th class="p-4 text-xs font-bold text-slate-500 uppercase border-b">Student</th>
+                                <th class="p-4 text-xs font-bold text-slate-500 uppercase border-b text-center">Score</th>
+                                <th class="p-4 text-xs font-bold text-slate-500 uppercase border-b text-center">Trust</th>
+                                <th class="p-4 text-xs font-bold text-slate-500 uppercase border-b text-center">Strikes</th>
+                                <th class="p-4 text-xs font-bold text-slate-500 uppercase border-b text-right">Submitted</th>
+                            </tr>
+                        </thead>
+                        <tbody id="results-table-body" class="divide-y divide-slate-100"></tbody>
+                    </table>
+                    <div id="results-empty-state" class="hidden flex flex-col items-center justify-center py-20 text-slate-400"><i class="fa-solid fa-clipboard-list text-4xl mb-3 opacity-20"></i><p>No results yet.</p></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- VIEW: INSTRUCTIONS -->
+        <div id="view-instructions" class="hidden-view absolute inset-0 overflow-y-auto bg-slate-50 p-4 flex items-center justify-center z-30">
+            <div class="w-full max-w-3xl bg-white rounded-2xl shadow-xl border border-slate-200 p-8">
+                <h2 class="text-2xl font-bold text-slate-900 mb-6 border-b pb-4">Examination Instructions</h2>
+                <div class="prose text-slate-600 mb-8 space-y-3">
+                    <ul class="list-disc pl-5 space-y-2">
+                        <li><strong>Full Screen:</strong> Mandatory. Exiting is a violation.</li>
+                        <li><strong>Camera:</strong> Must remain active.</li>
+                        <li><strong>Violations:</strong> Tab switching or leaving full screen.</li>
+                        <li class="text-red-600 font-bold"><strong>Auto-Submit:</strong> 3 violations = Exam Terminated.</li>
+                    </ul>
+                </div>
+                <div class="flex justify-end"><button onclick="app.proceedToSetup()" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-8 rounded-lg shadow-md">I Understand & Proceed</button></div>
+            </div>
+        </div>
+
+        <!-- VIEW: SETUP -->
+        <div id="view-exam-setup" class="hidden-view absolute inset-0 z-30 bg-white flex flex-col">
+            <div class="max-w-3xl mx-auto w-full flex-grow flex flex-col justify-center p-6">
+                <div class="text-center mb-8"><div class="w-16 h-16 bg-indigo-100 text-indigo-600 rounded-full flex items-center justify-center mx-auto mb-4 text-2xl"><i class="fa-solid fa-video"></i></div><h2 class="text-3xl font-bold text-slate-900">System Check</h2></div>
+                <div class="bg-black rounded-xl overflow-hidden relative flex items-center justify-center aspect-video max-w-md mx-auto mb-8">
+                    <video id="setup-video" autoplay muted playsinline class="w-full h-full object-cover absolute inset-0"></video>
+                    <div id="camera-placeholder" class="z-10 text-white text-center"><i class="fa-solid fa-camera-rotate text-3xl mb-2"></i><p class="text-sm opacity-80">Waiting for camera...</p></div>
+                </div>
+                <button id="btn-start-exam" onclick="app.startProctoredExam()" disabled class="w-full max-w-md mx-auto bg-slate-300 text-slate-500 font-bold py-4 rounded-xl cursor-not-allowed">Start Exam</button>
+            </div>
+        </div>
+
+        <!-- VIEW: ACTIVE EXAM -->
+        <div id="view-active-exam" class="hidden-view absolute inset-0 bg-white z-40 flex flex-col no-select">
+            <div class="h-16 bg-indigo-900 text-white flex items-center justify-between px-6 shadow-md flex-none">
+                <div><h2 id="exam-title-display" class="font-bold text-lg">Exam</h2><span class="text-indigo-300 text-xs">Candidate: <span id="exam-candidate-name"></span></span></div>
+                <div class="flex items-center gap-6">
+                    <div class="flex flex-col items-end"><span class="text-xs text-indigo-300 uppercase font-semibold">Time</span><span id="exam-timer" class="font-mono text-xl font-bold text-white">00:00:00</span></div>
+                    <button onclick="app.submitExam()" class="bg-red-600 hover:bg-red-700 px-4 py-2 rounded text-sm font-bold transition">Finish</button>
+                </div>
+            </div>
+            <div class="flex-grow flex overflow-hidden">
+                <div class="flex-grow overflow-y-auto p-8 bg-slate-50 relative flex flex-col items-center">
+                    <div id="violation-overlay" class="hidden absolute inset-0 bg-red-500/90 z-50 flex items-center justify-center flex-col text-white p-8 text-center backdrop-blur-sm">
+                        <i class="fa-solid fa-triangle-exclamation text-6xl mb-4 animate-bounce"></i><h2 class="text-4xl font-bold mb-2">VIOLATION DETECTED</h2>
+                        <p class="font-mono bg-white/20 px-4 py-2 rounded mb-4">Strikes: <span id="overlay-strike-count">0</span>/3</p>
+                        <button onclick="app.dismissViolation()" class="bg-white text-red-600 px-8 py-3 rounded-full font-bold hover:bg-red-50">Return to Exam</button>
+                    </div>
+                    <div class="w-full max-w-4xl bg-white rounded-2xl shadow-sm border border-slate-200 p-8 flex-grow flex flex-col">
+                        <div id="single-question-container" class="flex-grow"></div>
+                        <div class="border-t border-slate-100 pt-6 mt-6 flex justify-between items-center">
+                            <button onclick="app.prevQuestion()" id="btn-prev" class="px-6 py-2 border border-slate-300 text-slate-600 font-bold rounded-lg hover:bg-slate-50">Previous</button>
+                            <button onclick="app.toggleMarkReview()" id="btn-mark" class="px-6 py-2 text-yellow-600 border border-yellow-500 font-bold rounded-lg hover:bg-yellow-50 flex items-center gap-2"><i class="fa-regular fa-flag"></i> Mark for Review</button>
+                            <button onclick="app.nextQuestion()" id="btn-next" class="px-6 py-2 bg-indigo-600 text-white font-bold rounded-lg hover:bg-indigo-700">Next</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="w-80 bg-white border-l border-slate-200 flex flex-col flex-none shadow-lg">
+                    <div class="p-4 border-b border-slate-200 bg-slate-50">
+                        <div class="aspect-video bg-black rounded-lg overflow-hidden relative shadow-inner border border-slate-300"><video id="proctor-video" autoplay muted playsinline class="w-full h-full object-cover"></video></div>
+                        <div class="mt-2 flex justify-between items-center text-xs"><span class="text-slate-500 font-bold">LIVE</span><span id="violation-badge" class="bg-green-100 text-green-700 px-2 py-1 rounded font-bold">0 Violations</span></div>
+                    </div>
+                    <div class="flex-grow overflow-y-auto p-4">
+                        <div class="text-xs font-bold text-slate-400 uppercase mb-3 tracking-wider">Question Palette</div>
+                        <div id="question-nav-grid" class="grid grid-cols-5 gap-2"></div>
+                        <div class="mt-6 space-y-2 text-xs text-slate-500">
+                            <div class="flex items-center gap-2"><span class="w-3 h-3 rounded bg-[#22c55e]"></span> Answered</div>
+                            <div class="flex items-center gap-2"><span class="w-3 h-3 rounded bg-[#ef4444]"></span> Visited, No Ans</div>
+                            <div class="flex items-center gap-2"><span class="w-3 h-3 rounded bg-[#3b82f6]"></span> Ans & Marked</div>
+                            <div class="flex items-center gap-2"><span class="w-3 h-3 rounded bg-[#eab308]"></span> No Ans & Marked</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- MODAL: USER MANAGEMENT (TABS) -->
+        <div id="modal-provision-user" class="hidden fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-sm flex items-center justify-center p-4">
+            <div class="bg-white w-full max-w-4xl rounded-xl shadow-2xl flex flex-col max-h-[90vh]">
+                <div class="p-6 border-b border-slate-100 flex justify-between items-center">
+                    <h3 class="text-xl font-bold text-slate-900">Manage Users</h3>
+                    <button onclick="app.hideUserProvisioningModal()" class="text-slate-400 hover:text-slate-600"><i class="fa-solid fa-xmark text-xl"></i></button>
+                </div>
+                <div class="p-0 flex-grow overflow-hidden flex flex-col">
+                    <div class="flex border-b border-slate-200 bg-slate-50 px-6">
+                        <button onclick="app.switchUserTab('add')" id="tab-btn-add" class="py-4 px-4 text-sm font-bold text-indigo-600 border-b-2 border-indigo-600 transition">Add Users</button>
+                        <button onclick="app.switchUserTab('view')" id="tab-btn-view" class="py-4 px-4 text-sm font-medium text-slate-500 hover:text-slate-700 border-b-2 border-transparent transition">View All Users</button>
+                    </div>
+
+                    <!-- Tab: Add Users -->
+                    <div id="tab-content-add" class="p-8 overflow-y-auto">
+                        <div class="grid md:grid-cols-2 gap-8">
+                            <!-- Single -->
+                            <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
+                                <h4 class="font-bold text-slate-800 mb-4 flex items-center gap-2"><i class="fa-solid fa-user-plus text-indigo-600"></i> Single User</h4>
+                                <form onsubmit="app.provisionNewUser(event)" class="space-y-4">
+                                    <div><label class="block text-xs font-bold text-slate-500 uppercase mb-1">Email</label><input type="email" id="provision-email" class="w-full px-3 py-2 border rounded-lg"></div>
+                                    <div><label class="block text-xs font-bold text-slate-500 uppercase mb-1">Password</label><input type="password" id="provision-password" minlength="6" class="w-full px-3 py-2 border rounded-lg"></div>
+                                    <div><label class="block text-xs font-bold text-slate-500 uppercase mb-1">Role</label><select id="provision-role" class="w-full px-3 py-2 border rounded-lg"><option value="student">Student</option><option value="examiner">Teacher</option></select></div>
+                                    <button type="submit" class="w-full bg-green-600 text-white font-bold py-2 rounded-lg hover:bg-green-700">Add User</button>
+                                </form>
+                            </div>
+                            <!-- CSV -->
+                            <div class="bg-indigo-50 p-6 rounded-xl border border-indigo-100">
+                                <h4 class="font-bold text-indigo-900 mb-4 flex items-center gap-2"><i class="fa-solid fa-file-csv"></i> Bulk Upload</h4>
+                                <div class="text-xs text-indigo-800 mb-4 font-mono bg-white/50 p-3 rounded border border-indigo-200">Format: email,password,role</div>
+                                <input type="file" id="csv-file-input" accept=".csv" class="block w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:bg-indigo-200 file:text-indigo-800 hover:file:bg-indigo-300 mb-4"/>
+                                <button onclick="app.processCSVUpload()" class="w-full bg-indigo-600 text-white font-bold py-2 rounded-lg hover:bg-indigo-700">Process CSV</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Tab: View Users -->
+                    <div id="tab-content-view" class="hidden flex-grow overflow-y-auto">
+                        <table class="w-full text-left border-collapse">
+                            <thead class="bg-slate-50 sticky top-0 z-10">
+                                <tr>
+                                    <th class="p-4 text-xs font-bold text-slate-500 uppercase border-b">Email / Name</th>
+                                    <th class="p-4 text-xs font-bold text-slate-500 uppercase border-b">Role</th>
+                                    <th class="p-4 text-xs font-bold text-slate-500 uppercase border-b text-right">Last Login</th>
+                                </tr>
+                            </thead>
+                            <tbody id="user-list-tbody" class="divide-y divide-slate-100"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- MODAL: CREATE EXAM (Visual Builder) -->
+        <div id="modal-create-exam" class="hidden fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-sm flex items-center justify-center p-4">
+            <div class="bg-white w-full max-w-5xl rounded-xl shadow-2xl flex flex-col h-[90vh]">
+                <div class="p-6 border-b border-slate-100 flex justify-between items-center bg-slate-50 rounded-t-xl">
+                    <h3 class="text-xl font-bold text-slate-900">Exam Creator</h3>
+                    <div class="flex gap-3">
+                        <div class="relative">
+                            <input type="text" id="ai-topic-input" class="pl-3 pr-10 py-1.5 text-sm border border-indigo-200 rounded-lg focus:ring-2 focus:ring-indigo-500 w-64" placeholder="Topic for AI...">
+                            <button onclick="app.generateQuestionsWithAI()" id="btn-ai-generate" class="absolute right-1 top-1 text-indigo-600 hover:bg-indigo-50 p-1 rounded"><i class="fa-solid fa-wand-magic-sparkles"></i></button>
+                        </div>
+                        <button onclick="app.hideCreateExamModal()" class="text-slate-400 hover:text-slate-600"><i class="fa-solid fa-xmark text-xl"></i></button>
+                    </div>
+                </div>
+                
+                <div class="flex flex-grow overflow-hidden">
+                    <!-- Sidebar: Settings -->
+                    <div class="w-64 bg-slate-50 border-r border-slate-200 p-5 overflow-y-auto flex-none">
+                        <h4 class="text-xs font-bold text-slate-500 uppercase mb-4">Settings</h4>
+                        <div class="space-y-4">
+                            <div><label class="block text-xs font-semibold text-slate-600 mb-1">Title</label><input type="text" id="new-exam-title" class="w-full px-3 py-2 border rounded bg-white"></div>
+                            <div><label class="block text-xs font-semibold text-slate-600 mb-1">Duration (Min)</label><input type="number" id="new-exam-duration" value="60" class="w-full px-3 py-2 border rounded bg-white"></div>
+                            <div><label class="block text-xs font-semibold text-slate-600 mb-1">Access Code</label><input type="text" id="new-exam-code" class="w-full px-3 py-2 border rounded bg-white uppercase font-mono"></div>
+                        </div>
+                    </div>
+
+                    <!-- Main: Question Builder -->
+                    <div class="flex-grow p-6 overflow-y-auto bg-white" id="builder-scroll-area">
+                        <div id="question-builder-container" class="space-y-6">
+                            <!-- Questions added here dynamically -->
+                        </div>
+                        
+                        <div class="mt-8 flex justify-center">
+                             <button onclick="app.addBuilderQuestion()" class="bg-slate-100 text-slate-600 hover:bg-slate-200 hover:text-slate-800 font-bold py-3 px-6 rounded-lg border border-slate-300 border-dashed flex items-center gap-2 transition w-full justify-center">
+                                <i class="fa-solid fa-plus"></i> Add New Question
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="p-4 border-t border-slate-100 bg-slate-50 rounded-b-xl flex justify-between items-center">
+                    <span class="text-xs text-slate-500" id="builder-question-count">0 Questions</span>
+                    <button onclick="app.saveNewExam()" class="px-6 py-2 bg-indigo-600 text-white font-bold rounded-lg hover:bg-indigo-700 shadow-sm">Publish Exam</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- VIEW: STUDENT DASHBOARD (Unchanged) -->
+        <div id="view-student" class="hidden-view absolute inset-0 overflow-y-auto bg-slate-50 p-4 flex items-center justify-center">
+            <div class="w-full max-w-lg">
+                <div class="bg-white rounded-2xl shadow-xl border border-slate-200 overflow-hidden mb-6">
+                    <div class="p-6 border-b border-slate-100"><h2 class="text-xl font-bold text-slate-900">Join Examination</h2></div>
+                    <div class="p-6 space-y-4">
+                        <div><label class="block text-sm font-medium text-slate-700 mb-1">Access Code</label><input type="text" id="exam-access-code" class="block w-full rounded-lg border-slate-300 border px-4 py-3 focus:ring-indigo-500 uppercase tracking-widest font-mono" placeholder="EX-12345"></div>
+                        <button onclick="app.joinExam()" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 rounded-lg transition shadow-md">Verify & Start</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
+        import { getAuth, onAuthStateChanged, signOut, updateProfile, signInWithEmailAndPassword, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-auth.js";
+        import { getFirestore, collection, addDoc, query, where, getDocs, doc, getDoc, serverTimestamp, setDoc } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyA5dnfD6o9UdaCAdA58ruaatPuFGW-cyZQ",
+            authDomain: "testadege.firebaseapp.com",
+            databaseURL: "https://testadege-default-rtdb.firebaseio.com",
+            projectId: "testadege",
+            storageBucket: "testadege.firebasestorage.app",
+            messagingSenderId: "509681276651",
+            appId: "1:509681276651:web:2e52639f1bddee5d1210ae",
+            measurementId: "G-52PZWM8XDK"
+        };
+        
+        const apiKey = ""; 
+
+        const firebaseApp = initializeApp(firebaseConfig);
+        const auth = getAuth(firebaseApp);
+        const db = getFirestore(firebaseApp);
+
+        class ExamSystem {
+            constructor() {
+                this.user = null;
+                this.userRole = 'student';
+                this.currentExam = null;
+                this.currentQIndex = 0;
+                this.questionStatus = [];
+                this.violations = 0;
+                this.timerInterval = null;
+                this.stream = null;
+                this.builderCounter = 0;
+            }
+
+            async init() {
+                onAuthStateChanged(auth, (user) => {
+                    this.user = user;
+                    if (user) {
+                        const savedRole = localStorage.getItem('sentinel_role');
+                        if (savedRole) this.userRole = savedRole;
+                        this.updateUIAuth();
+                    } else {
+                        this.showView('view-auth');
+                        document.getElementById('user-nav').classList.add('hidden');
+                    }
+                });
+                this.setupGlobalProctoring();
+            }
+
+            async loadExaminerExams() { 
+                const list = document.getElementById('examiner-exam-list');
+                list.innerHTML = '<div class="col-span-full text-center"><span class="ai-loading text-indigo-600"></span></div>';
+                
+                try {
+                    // 1. Get Exams Created by Current User
+                    const q = query(collection(db, 'exams'), where('creatorId', '==', this.user.uid));
+                    const examSnap = await getDocs(q);
+                    
+                    // 2. Update Exam Count
+                    document.getElementById('stat-total-exams').innerText = examSnap.size;
+                    
+                    // 3. Render Exam List & Collect IDs
+                    list.innerHTML = '';
+                    const myExamIds = new Set();
+                    
+                    examSnap.forEach(doc => {
+                        const data = doc.data();
+                        myExamIds.add(doc.id);
+                        const el = document.createElement('div');
+                        el.className = "bg-white p-6 rounded-xl border border-slate-200 shadow-sm flex flex-col justify-between h-full";
+                        el.innerHTML = `
+                            <div>
+                                <div class="flex justify-between items-start mb-2">
+                                    <h3 class="font-bold text-lg text-slate-800 line-clamp-2">${data.title}</h3>
+                                    <span class="bg-slate-100 text-slate-600 text-xs font-bold px-2 py-1 rounded uppercase tracking-wide">${data.code}</span>
+                                </div>
+                                <p class="text-sm text-slate-500 mb-4">${data.questions ? data.questions.length : 0} Questions • ${data.duration} mins</p>
+                            </div>
+                            <button class="w-full py-2 bg-indigo-50 text-indigo-700 font-bold rounded-lg hover:bg-indigo-100 transition text-sm" onclick="app.viewExamResults('${doc.id}','${data.title}')">
+                                <i class="fa-solid fa-chart-pie mr-2"></i> View Results
+                            </button>`;
+                        list.appendChild(el);
+                    });
+
+                    // 4. Calculate Aggregates (Students & Avg Score) by fetching ALL results and filtering
+                    // Note: In a production app with thousands of results, you would use a Cloud Function or aggregation query.
+                    const resultsSnap = await getDocs(collection(db, 'results'));
+                    
+                    let uniqueStudents = new Set();
+                    let totalScore = 0;
+                    let resultCount = 0;
+
+                    resultsSnap.forEach(doc => {
+                        const r = doc.data();
+                        if (myExamIds.has(r.examId)) {
+                            uniqueStudents.add(r.studentId);
+                            totalScore += r.score;
+                            resultCount++;
+                        }
+                    });
+
+                    // Update UI Stats
+                    document.getElementById('stat-total-students').innerText = uniqueStudents.size;
+                    document.getElementById('stat-avg-score').innerText = resultCount > 0 ? Math.round(totalScore / resultCount) + '%' : '0%';
+
+                } catch (e) {
+                    console.error(e);
+                    list.innerHTML = '<div class="col-span-full text-center text-red-500">Error loading data</div>';
+                }
+            }
+
+            // --- QUESTION BUILDER LOGIC ---
+            
+            showCreateExamModal() { 
+                document.getElementById('modal-create-exam').classList.remove('hidden');
+                const container = document.getElementById('question-builder-container');
+                if(container.children.length === 0) this.addBuilderQuestion(); 
+            }
+            hideCreateExamModal() { document.getElementById('modal-create-exam').classList.add('hidden'); }
+
+            addBuilderQuestion(data = null) {
+                this.builderCounter++;
+                const qId = this.builderCounter;
+                const container = document.getElementById('question-builder-container');
+                
+                const qDiv = document.createElement('div');
+                qDiv.id = `q-card-${qId}`;
+                qDiv.className = "bg-slate-50 p-6 rounded-xl border border-slate-200 relative group transition hover:shadow-md";
+                qDiv.innerHTML = `
+                    <div class="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition">
+                        <button onclick="document.getElementById('q-card-${qId}').remove()" class="text-red-400 hover:text-red-600"><i class="fa-solid fa-trash"></i></button>
+                    </div>
+                    <div class="grid grid-cols-12 gap-4 mb-4">
+                        <div class="col-span-8">
+                            <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Question Text</label>
+                            <textarea class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 h-20 q-text" placeholder="Enter question...">${data ? data.text : ''}</textarea>
+                        </div>
+                        <div class="col-span-2">
+                            <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Marks</label>
+                            <input type="number" class="w-full px-3 py-2 border rounded-lg q-marks" value="${data ? (data.marks || 1) : 1}" min="1">
+                        </div>
+                        <div class="col-span-2">
+                             <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Image (Optional)</label>
+                             <input type="file" accept="image/*" onchange="app.handleImageUpload(this, 'img-preview-${qId}')" class="block w-full text-xs text-slate-500 file:mr-2 file:py-1 file:px-2 file:rounded-full file:border-0 file:bg-indigo-50 file:text-indigo-700">
+                             <img id="img-preview-${qId}" src="${data && data.image ? data.image : ''}" class="mt-2 h-12 w-auto object-contain ${data && data.image ? '' : 'hidden'}">
+                             <input type="hidden" class="q-image-base64" value="${data && data.image ? data.image : ''}">
+                        </div>
+                    </div>
+                    <div class="space-y-2" id="options-container-${qId}">
+                        <!-- Options go here -->
+                    </div>
+                    <button onclick="app.addBuilderOption(${qId})" class="mt-3 text-xs font-bold text-indigo-600 hover:bg-indigo-50 px-3 py-1.5 rounded border border-indigo-200 dashed border-dashed">+ Add Option</button>
+                `;
+                container.appendChild(qDiv);
+
+                if(data && data.options) {
+                    data.options.forEach((opt, idx) => this.addBuilderOption(qId, opt, idx === data.correct));
+                } else {
+                    this.addBuilderOption(qId, '', true);
+                    this.addBuilderOption(qId, '');
+                }
+            }
+
+            addBuilderOption(qId, text = '', isCorrect = false) {
+                const container = document.getElementById(`options-container-${qId}`);
+                const optDiv = document.createElement('div');
+                optDiv.className = "flex items-center gap-3";
+                optDiv.innerHTML = `
+                    <input type="radio" name="correct-${qId}" class="w-4 h-4 text-indigo-600 focus:ring-indigo-500 q-correct" ${isCorrect ? 'checked' : ''}>
+                    <input type="text" class="flex-grow px-3 py-2 border rounded text-sm q-option-text" placeholder="Option text" value="${text}">
+                    <button onclick="this.parentElement.remove()" class="text-slate-400 hover:text-red-500"><i class="fa-solid fa-xmark"></i></button>
+                `;
+                container.appendChild(optDiv);
+            }
+
+            handleImageUpload(input, previewId) {
+                if (input.files && input.files[0]) {
+                    if(input.files[0].size > 300000) { 
+                        alert("Image too large! Max 300KB.");
+                        input.value = "";
+                        return;
+                    }
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        document.getElementById(previewId).src = e.target.result;
+                        document.getElementById(previewId).classList.remove('hidden');
+                        input.nextElementSibling.nextElementSibling.value = e.target.result; 
+                    }
+                    reader.readAsDataURL(input.files[0]);
+                }
+            }
+
+            async saveNewExam() {
+                const title = document.getElementById('new-exam-title').value;
+                const duration = parseInt(document.getElementById('new-exam-duration').value);
+                const code = document.getElementById('new-exam-code').value.toUpperCase();
+                
+                if(!title || !code) return this.showToast("Title and Code required", "error");
+
+                const questions = [];
+                const qCards = document.querySelectorAll('[id^="q-card-"]');
+                
+                qCards.forEach((card, index) => {
+                    const text = card.querySelector('.q-text').value;
+                    const marks = parseInt(card.querySelector('.q-marks').value) || 1;
+                    const image = card.querySelector('.q-image-base64').value;
+                    
+                    const options = [];
+                    let correct = 0;
+                    const optDivs = card.querySelectorAll('.flex.items-center.gap-3');
+                    
+                    optDivs.forEach((opt, oIdx) => {
+                        options.push(opt.querySelector('.q-option-text').value);
+                        if(opt.querySelector('.q-correct').checked) correct = oIdx;
+                    });
+
+                    if(text) {
+                        questions.push({ id: index, text, marks, image, options, correct });
+                    }
+                });
+
+                if(questions.length === 0) return this.showToast("Add at least 1 question", "error");
+
+                try {
+                    await addDoc(collection(db, 'exams'), { title, duration, code, questions, creatorId: this.user.uid, createdAt: serverTimestamp() });
+                    this.showToast('Exam Published Successfully!', 'success');
+                    this.hideCreateExamModal();
+                    this.loadExaminerExams();
+                } catch (e) { console.error(e); this.showToast('Database Error', 'error'); }
+            }
+
+            // --- USER MANAGEMENT ---
+            showUserProvisioningModal() { 
+                document.getElementById('modal-provision-user').classList.remove('hidden'); 
+                this.switchUserTab('add'); 
+            }
+            hideUserProvisioningModal() { document.getElementById('modal-provision-user').classList.add('hidden'); }
+
+            switchUserTab(tab) {
+                const addBtn = document.getElementById('tab-btn-add');
+                const viewBtn = document.getElementById('tab-btn-view');
+                const addContent = document.getElementById('tab-content-add');
+                const viewContent = document.getElementById('tab-content-view');
+
+                if(tab === 'add') {
+                    addBtn.classList.replace('border-transparent', 'border-indigo-600'); addBtn.classList.add('text-indigo-600');
+                    viewBtn.classList.replace('border-indigo-600', 'border-transparent'); viewBtn.classList.remove('text-indigo-600');
+                    addContent.classList.remove('hidden'); viewContent.classList.add('hidden');
+                } else {
+                    viewBtn.classList.replace('border-transparent', 'border-indigo-600'); viewBtn.classList.add('text-indigo-600');
+                    addBtn.classList.replace('border-indigo-600', 'border-transparent'); addBtn.classList.remove('text-indigo-600');
+                    viewContent.classList.remove('hidden'); addContent.classList.add('hidden');
+                    this.loadUserList(); 
+                }
+            }
+
+            async loadUserList() {
+                const tbody = document.getElementById('user-list-tbody');
+                tbody.innerHTML = '<tr><td colspan="3" class="p-4 text-center"><span class="ai-loading"></span> Loading...</td></tr>';
+                
+                try {
+                    const snapshot = await getDocs(collection(db, 'users'));
+                    tbody.innerHTML = '';
+                    snapshot.forEach(doc => {
+                        const u = doc.data();
+                        const roleBadge = u.role === 'examiner' 
+                            ? '<span class="bg-purple-100 text-purple-700 px-2 py-1 rounded text-xs font-bold">Teacher</span>'
+                            : '<span class="bg-blue-100 text-blue-700 px-2 py-1 rounded text-xs font-bold">Student</span>';
+                        
+                        tbody.innerHTML += `
+                            <tr class="border-b border-slate-50 hover:bg-slate-50">
+                                <td class="p-4 text-sm font-medium text-slate-900">${u.email}<br><span class="text-slate-400 text-xs font-normal">${u.displayName || ''}</span></td>
+                                <td class="p-4">${roleBadge}</td>
+                                <td class="p-4 text-right text-xs text-slate-400 font-mono">${u.lastLogin ? new Date(u.lastLogin.seconds * 1000).toLocaleDateString() : '-'}</td>
+                            </tr>
+                        `;
+                    });
+                } catch(e) { tbody.innerHTML = '<tr><td colspan="3" class="p-4 text-center text-red-500">Error loading users</td></tr>'; }
+            }
+
+            async generateQuestionsWithAI() {
+                const topic = document.getElementById('ai-topic-input').value;
+                if(!topic) return this.showToast("Enter a topic", "error");
+                
+                const btn = document.getElementById('btn-ai-generate');
+                btn.innerHTML = `<span class="ai-loading"></span>`;
+                
+                try {
+                    const prompt = `Generate 3 exam questions about "${topic}" as raw JSON array: [{"text":"Q?","marks":1,"options":["A","B"],"correct":0}]`;
+                    let text = await this.callGeminiAPI(prompt);
+                    text = text.replace(/```json/g, '').replace(/```/g, '').trim();
+                    const data = JSON.parse(text);
+                    
+                    document.getElementById('question-builder-container').innerHTML = '';
+                    data.forEach(q => this.addBuilderQuestion(q));
+                    
+                    this.showToast("Questions generated!", "success");
+                } catch(e) { this.showToast("AI Error", "error"); }
+                finally { btn.innerHTML = '<i class="fa-solid fa-wand-magic-sparkles"></i>'; }
+            }
+            
+            setAuthMode(mode) {
+                this.userRole = mode;
+                document.getElementById('btn-mode-student').className = mode === 'student' ? "flex-1 py-2 text-sm font-medium rounded-md transition bg-white text-indigo-600 shadow-sm" : "flex-1 py-2 text-sm font-medium rounded-md transition text-slate-500 hover:text-slate-700";
+                document.getElementById('btn-mode-examiner').className = mode === 'examiner' ? "flex-1 py-2 text-sm font-medium rounded-md transition bg-white text-indigo-600 shadow-sm" : "flex-1 py-2 text-sm font-medium rounded-md transition text-slate-500 hover:text-slate-700";
+            }
+            async handleAuth(e) {
+                e.preventDefault();
+                const email = document.getElementById('auth-email').value;
+                const pass = document.getElementById('auth-password').value;
+                try {
+                    const cred = await signInWithEmailAndPassword(auth, email, pass);
+                    localStorage.setItem('sentinel_role', this.userRole);
+                    await this.saveUserProfile(cred.user.uid, email, this.userRole);
+                    this.showToast("Signed in", 'success');
+                } catch (error) { this.showToast("Login Failed: " + error.message, 'error'); }
+            }
+            async provisionNewUser(e) {
+                e.preventDefault();
+                const email = document.getElementById('provision-email').value;
+                const pass = document.getElementById('provision-password').value;
+                const role = document.getElementById('provision-role').value;
+                await this.createUserInternal(email, pass, role);
+                this.hideUserProvisioningModal();
+            }
+            async processCSVUpload() {
+                 const fileInput = document.getElementById('csv-file-input');
+                const file = fileInput.files[0];
+                if(!file) return this.showToast("Select a CSV file", "error");
+                const reader = new FileReader();
+                reader.onload = async (e) => {
+                    const rows = e.target.result.split('\n');
+                    let count = 0;
+                    for(let row of rows) {
+                        const cols = row.split(',');
+                        if(cols.length >= 3) {
+                            const email = cols[0].trim(); const pass = cols[1].trim(); const role = cols[2].trim().toLowerCase();
+                            if(email && pass) {
+                                try { await createUserWithEmailAndPassword(auth, email, pass).then(async (cred) => { await updateProfile(cred.user, { displayName: email.split('@')[0] }); await this.saveUserProfile(cred.user.uid, email, role); count++; }); } catch(err) {}
+                            }
+                        }
+                    }
+                    this.showToast(`Processed ${count} users.`, 'success');
+                    this.hideUserProvisioningModal();
+                };
+                reader.readAsText(file);
+            }
+            async createUserInternal(email, pass, role) {
+                try { const cred = await createUserWithEmailAndPassword(auth, email, pass); await updateProfile(cred.user, { displayName: email.split('@')[0] }); await this.saveUserProfile(cred.user.uid, email, role); this.showToast(`Created ${email}`, 'success'); } catch (e) { this.showToast(e.message, 'error'); }
+            }
+            async saveUserProfile(uid, email, role) { await setDoc(doc(db, 'users', uid), { uid, email, displayName: email.split('@')[0], role, lastLogin: serverTimestamp() }, { merge: true }); }
+            logout() { signOut(auth); window.location.reload(); }
+            updateUIAuth() {
+                document.getElementById('user-nav').classList.remove('hidden');
+                document.getElementById('user-display').innerText = this.user.displayName;
+                document.getElementById('user-role-badge').innerText = this.userRole.toUpperCase();
+                if (this.userRole === 'examiner') { this.showView('view-examiner'); this.loadExaminerExams(); } else { this.showView('view-student'); }
+            }
+            async joinExam() {
+                const code = document.getElementById('exam-access-code').value.toUpperCase().trim();
+                if (!code) return;
+                const examsRef = collection(db, 'exams');
+                const snapshot = await getDocs(examsRef);
+                let found = null;
+                snapshot.forEach(doc => { if(doc.data().code === code) found = {id: doc.id, ...doc.data()}; });
+                if(!found) return this.showToast('Invalid Code', 'error');
+                const resultsRef = collection(db, 'results');
+                const q = query(resultsRef, where("examId", "==", found.id), where("studentId", "==", this.user.uid));
+                const attemptSnap = await getDocs(q);
+                if (!attemptSnap.empty) return this.showToast("Already submitted.", "error");
+                this.currentExam = found;
+                this.showView('view-instructions');
+            }
+            proceedToSetup() { this.showView('view-exam-setup'); this.initCamera(); }
+            async initCamera() { try { this.stream = await navigator.mediaDevices.getUserMedia({ video: true }); document.getElementById('setup-video').srcObject = this.stream; document.getElementById('camera-placeholder').classList.add('hidden'); const btn = document.getElementById('btn-start-exam'); btn.disabled = false; btn.className = "w-full max-w-md mx-auto bg-indigo-600 text-white hover:bg-indigo-700 font-bold py-4 rounded-xl transition shadow-lg"; } catch (e) { this.showToast('Camera Denied', 'error'); } }
+            
+            startProctoredExam() {
+                // Graceful Fullscreen Request
+                try {
+                    document.documentElement.requestFullscreen().catch(e => {
+                        console.log("FS Denied");
+                        this.showToast("Fullscreen blocked by browser. Proceeding in windowed mode.", "warning");
+                    });
+                } catch(e) { console.log("FS Error"); }
+
+                document.getElementById('proctor-video').srcObject = this.stream;
+                this.showView('view-active-exam');
+                document.getElementById('exam-title-display').innerText = this.currentExam.title;
+                document.getElementById('exam-candidate-name').innerText = this.user.displayName;
+                this.questionStatus = this.currentExam.questions.map(() => ({ visited: false, answered: false, marked: false, selectedOption: null }));
+                this.currentQIndex = 0;
+                this.renderQuestion();
+                this.updateQuestionPalette();
+                this.startTimer(this.currentExam.duration);
+            }
+
+            renderQuestion() {
+                const qIndex = this.currentQIndex;
+                const q = this.currentExam.questions[qIndex];
+                const status = this.questionStatus[qIndex];
+                status.visited = true;
+                const container = document.getElementById('single-question-container');
+                container.innerHTML = `
+                    <div class="flex justify-between items-center mb-6">
+                        <h3 class="text-lg font-bold text-slate-800">Question ${qIndex + 1} of ${this.currentExam.questions.length}</h3>
+                        <div class="flex items-center gap-3">
+                             <span class="text-slate-500 text-sm font-bold">${q.marks} Marks</span>
+                             ${status.marked ? '<span class="text-yellow-600 text-xs font-bold bg-yellow-100 px-2 py-1 rounded"><i class="fa-solid fa-flag"></i> MARKED</span>' : ''}
+                        </div>
+                    </div>
+                    ${q.image ? `<img src="${q.image}" class="max-h-48 w-auto mb-4 rounded-lg border border-slate-200">` : ''}
+                    <p class="text-xl font-medium text-slate-900 mb-8 leading-relaxed">${q.text}</p>
+                    <div class="space-y-3">
+                        ${q.options.map((opt, oIdx) => `
+                            <label class="flex items-center gap-4 p-4 border-2 rounded-xl cursor-pointer transition hover:bg-slate-50 ${status.selectedOption === oIdx ? 'border-indigo-600 bg-indigo-50' : 'border-slate-200'}">
+                                <div class="w-6 h-6 rounded-full border-2 flex items-center justify-center ${status.selectedOption === oIdx ? 'border-indigo-600' : 'border-slate-300'}">${status.selectedOption === oIdx ? '<div class="w-3 h-3 bg-indigo-600 rounded-full"></div>' : ''}</div>
+                                <input type="radio" name="q_curr" value="${oIdx}" class="hidden" onchange="app.handleAnswer(${oIdx})">
+                                <span class="text-slate-700 font-medium">${opt}</span>
+                            </label>`).join('')}
+                    </div>`;
+                document.getElementById('btn-prev').disabled = qIndex === 0;
+                document.getElementById('btn-next').disabled = qIndex === this.currentExam.questions.length - 1;
+                this.updateQuestionPalette();
+            }
+            handleAnswer(optIdx) { this.questionStatus[this.currentQIndex].selectedOption = optIdx; this.questionStatus[this.currentQIndex].answered = true; this.renderQuestion(); }
+            toggleMarkReview() { this.questionStatus[this.currentQIndex].marked = !this.questionStatus[this.currentQIndex].marked; this.renderQuestion(); }
+            nextQuestion() { if(this.currentQIndex < this.currentExam.questions.length - 1) { this.currentQIndex++; this.renderQuestion(); } }
+            prevQuestion() { if(this.currentQIndex > 0) { this.currentQIndex--; this.renderQuestion(); } }
+            jumpToQuestion(idx) { this.currentQIndex = idx; this.renderQuestion(); }
+            updateQuestionPalette() {
+                const nav = document.getElementById('question-nav-grid'); nav.innerHTML = '';
+                this.questionStatus.forEach((s, i) => {
+                    let classes = "border rounded text-xs font-bold h-8 w-full flex items-center justify-center transition ";
+                    if (s.marked && s.answered) classes += "pal-review-answered"; else if (s.marked && !s.answered) classes += "pal-review-unanswered"; else if (s.answered) classes += "pal-answered"; else if (s.visited && !s.answered) classes += "pal-visited-unanswered"; else classes += "pal-unvisited hover:bg-slate-200";
+                    if (i === this.currentQIndex) classes += " ring-2 ring-offset-1 ring-indigo-600";
+                    const btn = document.createElement('button'); btn.className = classes; btn.innerText = i + 1; btn.onclick = () => this.jumpToQuestion(i); nav.appendChild(btn);
+                });
+            }
+            startTimer(mins) {
+                let sec = mins * 60; const disp = document.getElementById('exam-timer');
+                this.timerInterval = setInterval(() => { sec--; const m = Math.floor(sec / 60), s = sec % 60; disp.innerText = `${m}:${s<10?'0'+s:s}`; if(sec <= 0) this.submitExam(true); }, 1000);
+            }
+            setupGlobalProctoring() {
+                document.addEventListener("visibilitychange", () => { if(document.hidden && this.currentExam) this.logViolation("Tab Switch"); });
+                window.addEventListener("blur", () => { if(this.currentExam) this.logViolation("Focus Lost"); });
+                document.addEventListener('fullscreenchange', () => { if (!document.fullscreenElement && this.currentExam) this.logViolation("Exited Fullscreen"); });
+                document.addEventListener('contextmenu', e => e.preventDefault());
+            }
+            logViolation(reason) {
+                const ov = document.getElementById('violation-overlay'); if(!ov.classList.contains('hidden')) return;
+                this.violations++; document.getElementById('overlay-strike-count').innerText = this.violations;
+                if (this.violations >= 3) { alert("Maximum violations reached (3/3). Auto-submitting."); this.submitExam(true); return; }
+                ov.classList.remove('hidden'); document.getElementById('violation-badge').innerText = `${this.violations} Violations`;
+            }
+            dismissViolation() { document.getElementById('violation-overlay').classList.add('hidden'); if(!document.fullscreenElement) document.documentElement.requestFullscreen().catch(()=>{}); }
+            async submitExam(force=false) {
+                if(!force && !confirm('Finish Exam?')) return;
+                clearInterval(this.timerInterval); if(this.stream) this.stream.getTracks().forEach(t=>t.stop()); document.exitFullscreen().catch(()=>{}); this.currentExam = null;
+                let score = 0, totalMarks = 0;
+                this.currentExam.questions.forEach((q,i) => { totalMarks += (q.marks || 1); if(this.questionStatus[i].selectedOption === q.correct) score += (q.marks || 1); });
+                const pct = Math.round((score / totalMarks) * 100);
+                let trust = Math.max(0, 100 - (this.violations * 33));
+                await addDoc(collection(db, 'results'), { examId: this.currentExam.id, examTitle: this.currentExam.title, studentName: this.user.displayName, studentId: this.user.uid, score: pct, trustScore: trust, violations: this.violations, submittedAt: serverTimestamp() });
+                this.showToast('Submitted!', 'success'); setTimeout(() => window.location.reload(), 2000);
+            }
+            showView(id) { ['view-auth', 'view-examiner', 'view-student', 'view-instructions', 'view-exam-setup', 'view-active-exam'].forEach(v => document.getElementById(v).classList.add('hidden-view')); document.getElementById(id).classList.remove('hidden-view'); }
+            showToast(msg, type) { const t = document.createElement('div'); t.className = `${type==='success'?'bg-green-600':'bg-slate-800'} text-white px-4 py-3 rounded shadow-lg text-sm font-bold mb-2`; t.innerText = msg; document.getElementById('toast-container').appendChild(t); setTimeout(() => t.remove(), 3000); }
+            hideResultsModal() { document.getElementById('modal-results').classList.add('hidden'); }
+            
+            async viewExamResults(id, title) { 
+                const modal = document.getElementById('modal-results'); document.getElementById('results-modal-title').innerText = title; modal.classList.remove('hidden');
+                const tbody = document.getElementById('results-table-body'); tbody.innerHTML = '';
+                const q = query(collection(db, 'results'), where('examId', '==', id)); const snap = await getDocs(q);
+                if(snap.empty) document.getElementById('results-empty-state').classList.remove('hidden'); else { document.getElementById('results-empty-state').classList.add('hidden'); snap.forEach(doc => { const r = doc.data(); tbody.innerHTML += `<tr class="border-b"><td class="p-3">${r.studentName}</td><td class="p-3 text-center">${r.score}%</td><td class="p-3 text-center">${r.trustScore}%</td><td class="p-3 text-center">${r.violations}</td><td class="p-3 text-right text-xs">Submitted</td></tr>`; }); }
+            }
+            async callGeminiAPI(prompt) { try { const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`; const response = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] }) }); const data = await response.json(); return data.candidates?.[0]?.content?.parts?.[0]?.text || ""; } catch (e) { return ""; } }
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            window.app = new ExamSystem();
+            window.app.init();
+        });
+    </script>
+</body>
+</html>
