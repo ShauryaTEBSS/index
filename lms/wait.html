@@ -1,0 +1,150 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registration Confirmation</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Hind:wght@400;500;600;700&display=swap');
+        body {
+            font-family: 'Poppins', sans-serif;
+        }
+        .hindi-text {
+            font-family: 'Hind', sans-serif;
+        }
+        .gradient-bg {
+            background: linear-gradient(135deg, #4f46e5 0%, #10b981 100%);
+        }
+        .card-shadow {
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        }
+        .animated-checkmark {
+            stroke-dasharray: 1000;
+            stroke-dashoffset: 1000;
+            animation: dash 2s ease forwards;
+        }
+        @keyframes dash {
+            to {
+                stroke-dashoffset: 0;
+            }
+        }
+        .bounce {
+            animation: bounce 2s infinite;
+        }
+        @keyframes bounce {
+            0%, 100% {
+                transform: translateY(-25%);
+                animation-timing-function: cubic-bezier(0.8,0,1,1);
+            }
+            50% {
+                transform: translateY(0);
+                animation-timing-function: cubic-bezier(0,0,0.2,1);
+            }
+        }
+    </style>
+</head>
+<body class="min-h-screen gradient-bg flex items-center justify-center p-4">
+    <div class="w-full max-w-2xl bg-white rounded-xl card-shadow overflow-hidden">
+        <!-- Header with gradient -->
+        <div class="bg-gradient-to-r from-indigo-600 to-emerald-500 p-6 text-white text-center">
+            <div class="flex justify-center mb-4">
+                <svg xmlns="http://www.w3.org/2000/svg" width="80" height="80" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-white">
+                    <path class="animated-checkmark" d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                    <polyline class="animated-checkmark" points="22 4 12 14.01 9 11.01"></polyline>
+                </svg>
+            </div>
+            <h1 class="text-3xl font-bold mb-2">Registration Confirmed!</h1>
+            <p class="opacity-90">Thank you for registering with us</p>
+        </div>
+        
+        <!-- Main content -->
+        <div class="p-6 md:p-8">
+            <div class="mb-8 text-center">
+                <div class="inline-flex items-center justify-center w-16 h-16 bg-indigo-100 rounded-full mb-4 bounce">
+                    <i class="fas fa-hourglass-half text-indigo-600 text-2xl"></i>
+                </div>
+                <h2 class="text-xl font-semibold text-gray-800 mb-2">Your account setup is in progress</h2>
+                <p class="text-gray-600 mb-6">
+                    Please wait 3 to 4 business days for your portal assignment and setup to be completed.
+                    You will receive an email notification once your account is ready for access.
+                </p>
+                
+                <div class="bg-yellow-50 border-l-4 border-yellow-400 p-4 mb-6">
+                    <div class="flex">
+                        <div class="flex-shrink-0">
+                            <i class="fas fa-info-circle text-yellow-500"></i>
+                        </div>
+                        <div class="ml-3">
+                            <p class="text-sm text-yellow-700">
+                                If you don't receive access within 5 business days, please contact our support team.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Hindi Notice -->
+                <div class="mt-8 border-t pt-6">
+                    <h3 class="text-lg font-medium text-gray-800 mb-3 hindi-text">हिंदी में सूचना</h3>
+                    <div class="bg-blue-50 rounded-lg p-4 hindi-text text-right">
+                        <p class="text-gray-700 mb-2">आपके पंजीकरण की पुष्टि हो गई है!</p>
+                        <p class="text-gray-700">कृपया अपने पोर्टल असाइनमेंट/सेटअप के लिए 3 से 4 कार्य दिवस प्रतीक्षा करें। सेटअप पूरा होने पर आपको एक ईमेल सूचना प्राप्त होगी।</p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Support section -->
+            <div class="bg-gray-50 rounded-lg p-5 mt-6">
+                <h3 class="font-medium text-gray-800 mb-3 flex items-center">
+                    <i class="fas fa-headset text-indigo-600 mr-2"></i>
+                    Need Help?
+                </h3>
+                <p class="text-gray-600 mb-2">Contact our support team at:</p>
+                <div class="flex items-center justify-between bg-white p-3 rounded border border-gray-200">
+                    <div class="flex items-center">
+                        <i class="fas fa-envelope text-gray-500 mr-2"></i>
+                        <a href="mailto:postmaster@mygeography.dpdns.org" class="text-indigo-600 hover:text-indigo-800 break-all">postmaster@mygeography.dpdns.org</a>
+                    </div>
+                    <button onclick="copyToClipboard('postmaster@mygeography.dpdns.org')" class="text-indigo-600 hover:text-indigo-800 text-sm ml-2" title="Copy email">
+                        <i class="far fa-copy"></i>
+                    </button>
+                </div>
+                <p class="text-gray-500 text-sm mt-3">Average response time: 24-48 hours</p>
+            </div>
+            
+            <!-- Home button -->
+            <div class="mt-8 text-center">
+                <a href="#" class="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-all duration-200">
+                    <i class="fas fa-home mr-2"></i> Return to Home
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function copyToClipboard(text) {
+            navigator.clipboard.writeText(text).then(function() {
+                // Show temporary feedback
+                const button = document.querySelector('[title="Copy email"]');
+                const originalIcon = button.innerHTML;
+                button.innerHTML = '<i class="fas fa-check"></i>';
+                button.classList.add('text-green-600');
+                
+                setTimeout(() => {
+                    button.innerHTML = originalIcon;
+                    button.classList.remove('text-green-600');
+                }, 2000);
+            }, function(err) {
+                console.error('Could not copy text: ', err);
+            });
+        }
+
+        // Animation for the checkmark
+        document.addEventListener('DOMContentLoaded', function() {
+            // The SVG animation is handled via CSS animations
+        });
+    </script>
+</body>
+</html>
