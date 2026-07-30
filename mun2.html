@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="en" data-bs-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lok Sabha Command Center - Piyush Goyal</title>
+    <!-- Bootstrap CSS -->
+<!-- MUN API: AQ.Ab8RN6KM0aHscfCIp7GVGreJ9urXlQEP8Hfo7caJbLZE4I9cgA-->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #121212; color: #e0e0e0; transition: all 0.3s ease; }
+        
+        /* Rage Mode Classes */
+        body.rage-mode { background-color: #2b0000; color: #ffcccc; }
+        .rage-mode .navbar { border-bottom: 3px solid #ff0000; background-color: #1a0000 !important; }
+        .rage-mode .question-card { border-left-color: #ff0000; background-color: #3d0000; }
+        
+        .navbar { border-bottom: 3px solid #ff9933; }
+        .nav-pills .nav-link.active { background-color: #ff9933; color: #000; font-weight: bold; }
+        .nav-pills .nav-link { color: #fff; }
+        .question-card, .ai-card, .fact-card { background-color: #1e1e1e; border-left: 4px solid #ff9933; margin-bottom: 15px; padding: 15px; border-radius: 5px; }
+        .ai-card { border-left-color: #0dcaf0; }
+        .fact-card { border-left-color: #198754; }
+        .btn-copy { font-size: 0.8rem; float: right; background-color: #333; color: #fff; border: 1px solid #555; margin-left: 5px; }
+        .btn-copy:hover { background-color: #ff9933; color: #000; }
+        .radar-box { background-color: #051b11; border: 1px solid #198754; padding: 15px; border-radius: 5px; margin-bottom: 20px; }
+        
+        /* Timer UI */
+        .timer-box { background: #000; padding: 5px 15px; border-radius: 5px; border: 1px solid #ff9933; font-family: monospace; font-size: 1.5rem; color: #ff9933; }
+    </style>
+</head>
+<body>
+
+<nav class="navbar navbar-dark bg-dark mb-4 sticky-top shadow">
+    <div class="container-fluid d-flex justify-content-between align-items-center">
+        <span class="navbar-brand mb-0 h1">🏛️ Lok Sabha Command Center | Hon'ble Minister Piyush Goyal</span>
+        
+        <!-- Built-in Timer & Rage Mode -->
+        <div class="d-flex align-items-center gap-3">
+            <button class="btn btn-outline-danger btn-sm fw-bold" id="rage-toggle">🔥 RAGE MODE</button>
+            <div class="timer-box d-flex align-items-center gap-2">
+                <span id="display-time">00:00</span>
+                <button class="btn btn-sm btn-success py-0 px-2" id="start-timer">▶</button>
+                <button class="btn btn-sm btn-warning py-0 px-2" id="stop-timer">⏸</button>
+                <button class="btn btn-sm btn-danger py-0 px-2" id="reset-timer">↺</button>
+            </div>
+        </div>
+    </div>
+</nav>
+
+<div class="container pb-5">
+    <!-- Tabs -->
+    <ul class="nav nav-pills nav-fill mb-4 shadow-sm p-2 rounded bg-dark" id="agenda-tabs" role="tablist">
+        <li class="nav-item">
+            <button class="nav-link active" data-bs-toggle="pill" data-bs-target="#radar" type="button">📡 Gemini Radar</button>
+        </li>
+        <li class="nav-item">
+            <button class="nav-link" data-bs-toggle="pill" data-bs-target="#arsenal" type="button">📊 CA's Fact Arsenal</button>
+        </li>
+        <li class="nav-item">
+            <button class="nav-link" data-bs-toggle="pill" data-bs-target="#viksit" type="button">Formal: Viksit</button>
+        </li>
+        <li class="nav-item">
+            <button class="nav-link" data-bs-toggle="pill" data-bs-target="#waqf" type="button">Informal: Waqf/UGC</button>
+        </li>
+    </ul>
+
+    <!-- Tab Content -->
+    <div class="tab-content" id="agenda-content">
+        
+        <!-- GEMINI AI RADAR (LIVE INTERCEPTION + HISTORY) -->
+        <div class="tab-pane fade show active" id="radar" role="tabpanel">
+            <div class="radar-box shadow-sm">
+                <h4 class="text-success mb-3">🛰️ Live Intercept & Counter-Attack</h4>
+                
+                <div class="input-group mb-3">
+                    <span class="input-group-text bg-dark text-warning border-secondary">API Key</span>
+                    <input type="password" id="gemini-api-key" class="form-control text-bg-dark border-secondary" placeholder="Enter Gemini Key...">
+                </div>
+
+                <div class="mb-3">
+                    <div class="input-group mb-2">
+                        <button class="btn btn-danger fw-bold" id="start-listen-btn" type="button">🎙️ Listen to Opposition</button>
+                        <button class="btn btn-secondary" id="stop-listen-btn" type="button">🛑 Stop</button>
+                    </div>
+                    <textarea id="opposition-transcript" class="form-control text-bg-dark border-secondary" rows="3" placeholder="Speech transcript will appear here..."></textarea>
+                    <div id="listen-status" class="form-text text-success mt-1">Status: Standby.</div>
+                </div>
+                <button class="btn btn-info w-100 fw-bold text-dark fs-5 shadow" id="generate-attack-btn">⚡ GENERATE LETHAL COUNTER-ATTACK ⚡</button>
+            </div>
+
+            <!-- Current Results -->
+            <div id="ai-results" class="mt-4"></div>
+
+            <!-- LocalStorage History Archive -->
+            <h5 class="text-secondary mt-5 border-bottom border-secondary pb-2">💾 Archived AI Counter-Attacks</h5>
+            <div id="ai-history-container"></div>
+            <button class="btn btn-outline-danger btn-sm mt-3" id="clear-history-btn">Clear Archive</button>
+        </div>
+
+        <!-- FACT ARSENAL -->
+        <div class="tab-pane fade" id="arsenal" role="tabpanel">
+            <h4 class="mb-3 text-success">📊 The CA's Data Bank (Insta-Kill Facts)</h4>
+            <input type="text" id="fact-search" class="form-control text-bg-dark border-secondary mb-4" placeholder="Search facts (e.g., Export, Startup, Inflation)...">
+            <div id="fact-list"></div>
+        </div>
+
+        <!-- STATIC DOSSIERS -->
+        <div class="tab-pane fade" id="viksit" role="tabpanel">
+            <h4 class="mb-3 text-warning">Agenda: Viksit Bharat @ 2047</h4>
+            <div id="viksit-questions"></div>
+        </div>
+        <div class="tab-pane fade" id="waqf" role="tabpanel">
+            <h4 class="mb-3 text-warning">Informal Agendas (Waqf & UGC)</h4>
+            <div id="waqf-questions"></div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // --- 1. TIMER LOGIC ---
+    let timerInterval;
+    let seconds = 0;
+    const timeDisplay = document.getElementById('display-time');
+    
+    function updateTimerDisplay() {
+        const min = String(Math.floor(seconds / 60)).padStart(2, '0');
+        const sec = String(seconds % 60).padStart(2, '0');
+        timeDisplay.innerText = `${min}:${sec}`;
+    }
+    document.getElementById('start-timer').addEventListener('click', () => {
+        clearInterval(timerInterval);
+        timerInterval = setInterval(() => { seconds++; updateTimerDisplay(); }, 1000);
+    });
+    document.getElementById('stop-timer').addEventListener('click', () => clearInterval(timerInterval));
+    document.getElementById('reset-timer').addEventListener('click', () => {
+        clearInterval(timerInterval); seconds = 0; updateTimerDisplay();
+    });
+
+    // --- 2. RAGE MODE TOGGLE ---
+    document.getElementById('rage-toggle').addEventListener('click', () => {
+        document.body.classList.toggle('rage-mode');
+        const btn = document.getElementById('rage-toggle');
+        btn.innerText = document.body.classList.contains('rage-mode') ? "🥶 COOL DOWN" : "🔥 RAGE MODE";
+    });
+
+    // --- 3. COPY FUNCTION ---
+    function copyText(btnElement) {
+        const textElement = btnElement.nextElementSibling.querySelector('.q-text');
+        navigator.clipboard.writeText(textElement.innerText).then(() => {
+            const original = btnElement.innerText;
+            btnElement.innerText = 'Copied!';
+            btnElement.classList.add('bg-success');
+            setTimeout(() => { btnElement.innerText = original; btnElement.classList.remove('bg-success'); }, 1500);
+        });
+    }
+
+    // --- 4. FACT ARSENAL LOGIC ---
+    const facts = [
+        "EXPORTS: FY 2025-26 record high at $860 Billion (Merchandise: $442B, Services: $421B).",
+        "STARTUPS: Grew from 500 in 2014 to over 1,00,000 recognized startups today.",
+        "INFLATION: Controlled historically compared to 2013's double-digit (10-12%) 'Fragile Five' era.",
+        "POVERTY: NITI Aayog confirms nearly 25 crore people escaped multidimensional poverty in 10 years.",
+        "WAQF LAND: 8.7 lakh properties registered, the 3rd largest landowner after Armed Forces & Railways."
+    ];
+    const factContainer = document.getElementById('fact-list');
+    function renderFacts(filter = "") {
+        factContainer.innerHTML = "";
+        facts.filter(f => f.toLowerCase().includes(filter.toLowerCase())).forEach(f => {
+            factContainer.innerHTML += `
+                <div class="fact-card shadow-sm">
+                    <button class="btn btn-sm btn-copy" onclick="copyText(this)">Copy</button>
+                    <p class="mb-0 fs-6 copy-target"><span class="q-text">${f}</span></p>
+                </div>`;
+        });
+    }
+    renderFacts();
+    document.getElementById('fact-search').addEventListener('input', (e) => renderFacts(e.target.value));
+
+    // --- 5. STATIC QUESTIONS RENDER (Truncated for space) ---
+    const viksitQs = ["Adhyaksh Mahodaya, 2013 me inki sarkar ke dauran Bharat ki economy 'Fragile Five' me aati thi. Aaj India has achieved a record US$ 860 billion in total exports. Main vipaksh se poochna chahta hoon, kya inka Viksit Bharat ka vision desh ko wapas usi import-dependency me le jana hai?"];
+    const waqfQs = ["Adhyaksh Mahodaya, the Waqf (Amendment) Act, 2025 renames the previous law to the UWMEED Act 1995. Yeh naya kanoon Waqf properties ki management aur governance me accountability laane ke liye banaya gaya hai. Main in bhrasht logon se poochna chahta hoon, inko transparency se itna darr kyun lagta hai?"];
+    
+    function renderStatic(sectionId, dataArray) {
+        const container = document.getElementById(sectionId);
+        dataArray.forEach((q, index) => {
+            container.innerHTML += `
+                <div class="question-card shadow-sm">
+                    <button class="btn btn-sm btn-copy" onclick="copyText(this)">Copy</button>
+                    <p class="mb-0 fs-6 copy-target"><strong>Q${index + 1}:</strong> <span class="q-text">${q}</span></p>
+                </div>`;
+        });
+    }
+    renderStatic('viksit-questions', viksitQs);
+    renderStatic('waqf-questions', waqfQs);
+
+    // --- 6. LOCAL STORAGE AI HISTORY ---
+    function loadHistory() {
+        const historyData = JSON.parse(localStorage.getItem('aiHistory')) || [];
+        const container = document.getElementById('ai-history-container');
+        container.innerHTML = "";
+        historyData.forEach((q, index) => {
+            container.innerHTML += `
+                <div class="ai-card shadow-sm bg-dark">
+                    <button class="btn btn-sm btn-copy" onclick="copyText(this)">Copy</button>
+                    <p class="mb-0 fs-6 copy-target text-secondary"><span class="q-text">${q}</span></p>
+                </div>`;
+        });
+    }
+    function saveToHistory(question) {
+        let historyData = JSON.parse(localStorage.getItem('aiHistory')) || [];
+        historyData.unshift(question); // Add to top
+        localStorage.setItem('aiHistory', JSON.stringify(historyData.slice(0, 20))); // Keep last 20
+        loadHistory();
+    }
+    document.getElementById('clear-history-btn').addEventListener('click', () => {
+        localStorage.removeItem('aiHistory'); loadHistory();
+    });
+    loadHistory();
+
+    // --- 7. GEMINI AI & MIC LOGIC ---
+    const apiKeyInput = document.getElementById('gemini-api-key');
+    if(localStorage.getItem('geminiApiKey')) apiKeyInput.value = localStorage.getItem('geminiApiKey');
+    apiKeyInput.addEventListener('input', () => localStorage.setItem('geminiApiKey', apiKeyInput.value));
+
+    // Mic setup
+    const startBtn = document.getElementById('start-listen-btn');
+    const stopBtn = document.getElementById('stop-listen-btn');
+    const transcriptBox = document.getElementById('opposition-transcript');
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+
+    if (typeof SpeechRecognition !== "undefined") {
+        const recognition = new SpeechRecognition();
+        recognition.lang = 'hi-IN'; recognition.continuous = true; recognition.interimResults = true;
+        recognition.onresult = (e) => {
+            let final = '';
+            for (let i = e.resultIndex; i < e.results.length; ++i) {
+                if (e.results[i].isFinal) final += e.results[i][0].transcript + ' ';
+            }
+            if(final) transcriptBox.value += final;
+        };
+        startBtn.addEventListener('click', () => { recognition.start(); startBtn.innerText = "🔴 Listening..."; });
+        stopBtn.addEventListener('click', () => { recognition.stop(); startBtn.innerText = "🎙️ Listen to Opposition"; });
+    }
+
+    // AI Generation
+    document.getElementById('generate-attack-btn').addEventListener('click', async () => {
+        const apiKey = apiKeyInput.value.trim();
+        const speechText = transcriptBox.value.trim();
+        const resultsContainer = document.getElementById('ai-results');
+
+        if (!apiKey || !speechText) return alert("API Key and Transcript required!");
+
+        resultsContainer.innerHTML = `<h5 class="text-info mt-3 blink">⏳ Synthesizing Lethal Data...</h5>`;
+
+        const prompt = `You are Union Minister Piyush Goyal in a Lok Sabha MUN with Amit Shah's aggressive style. Agenda: Viksit Bharat/Waqf/UGC. The Opposition said: "${speechText}". Generate 1 aggressive, fact-backed counter-question in 70% Hindi (Roman) / 30% English to destroy their argument. Output ONLY the plain text question.`;
+
+        try {
+            const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`, {
+                method: 'POST', headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
+            });
+            const data = await res.json();
+            const attack = data.candidates[0].content.parts[0].text;
+            
+            resultsContainer.innerHTML = `
+                <div class="ai-card shadow-sm border-danger">
+                    <button class="btn btn-sm btn-copy" onclick="copyText(this)">Copy</button>
+                    <p class="mb-0 fs-5 copy-target text-info fw-bold">🔥 <span class="q-text">${attack}</span></p>
+                </div>`;
+            
+            saveToHistory(attack);
+            transcriptBox.value = ''; // clear for next speech
+        } catch (err) {
+            resultsContainer.innerHTML = `<div class="alert alert-danger">Error: ${err.message}</div>`;
+        }
+    });
+</script>
+<!-- Bootstrap JS -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
